@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Procurement Hub — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(20,184,166,0.1);color:#14b8a6;font-weight:700;border-right:2px solid #14b8a6;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .hub-main{overflow-y:auto;}
+    .hub-topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .hub-topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .hub-topbar__breadcrumb span{color:#14b8a6;font-weight:600;}
+    .hub-content{padding:24px 28px;}
+    .hub-hero-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-xl);margin-bottom:24px;border:1px solid var(--color-border);}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+
+    .proc-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    @media(max-width:1000px){.proc-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+    .proc-kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;animation:fadeInUp 0.4s ease both;}
+    .proc-kpi__value{font-size:1.5rem;font-weight:900;letter-spacing:-0.03em;color:#14b8a6;margin-bottom:4px;}
+    .proc-kpi__label{font-size:0.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;}
+    .proc-kpi__trend{font-size:0.72rem;font-weight:600;color:#2ecc71;margin-top:4px;}
+
+    .vendor-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+    .vendor-table th{padding:10px 14px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;background:var(--color-bg-deep);border-bottom:1px solid var(--color-border);text-align:left;color:var(--color-text-muted);}
+    .vendor-table td{padding:11px 14px;border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);}
+    .vendor-table tr:last-child td{border-bottom:none;}
+    .vendor-table tr:hover td{background:var(--color-bg-hover);}
+    .vendor-table td:first-child{font-weight:600;color:var(--color-text-primary);}
+    .rating-stars{color:#f5a623;font-size:0.78rem;letter-spacing:1px;}
+    .status-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.65rem;font-weight:700;}
+
+    .spend-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .spend-bar-row:last-child{margin-bottom:0;}
+    .spend-bar-label{font-size:0.78rem;color:var(--color-text-secondary);min-width:140px;}
+    .spend-bar-track{flex:1;height:8px;background:var(--color-border);border-radius:999px;overflow:hidden;}
+    .spend-bar-fill{height:100%;border-radius:999px;background:#14b8a6;transition:width .6s ease;}
+    .spend-bar-value{font-size:0.75rem;font-weight:700;color:var(--color-text-primary);min-width:48px;text-align:right;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html" class="active">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="hub-main">
+    <div class="hub-topbar">
+      <span class="hub-topbar__breadcrumb">Dashboard → <span>Procurement Hub</span></span>
+      <button onclick="SESMine.showToast('New purchase order form coming soon.','info')"
+              style="padding:6px 14px;background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.25);border-radius:var(--radius-md);color:#14b8a6;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">
+        + New PO
+      </button>
+    </div>
+    <div class="hub-content">
+
+      <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=75&fit=crop"
+           alt="Mining supply chain and procurement" class="hub-hero-img"/>
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Procurement Hub</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Vendor management, contract lifecycle, purchase orders and spend analytics for mining operations.</p>
+
+      <!-- KPIs -->
+      <div class="proc-kpi-grid">
+        <div class="proc-kpi" style="animation-delay:0.05s">
+          <div class="proc-kpi__value">$182M</div>
+          <div class="proc-kpi__label">Total Spend Tracked</div>
+          <div class="proc-kpi__trend">↑ $14M vs last year</div>
+        </div>
+        <div class="proc-kpi" style="animation-delay:0.1s">
+          <div class="proc-kpi__value">340</div>
+          <div class="proc-kpi__label">Approved Vendors</div>
+          <div class="proc-kpi__trend">12 new this quarter</div>
+        </div>
+        <div class="proc-kpi" style="animation-delay:0.15s">
+          <div class="proc-kpi__value">$8.4M</div>
+          <div class="proc-kpi__label">Savings Identified</div>
+          <div class="proc-kpi__trend">4.6% of total spend</div>
+        </div>
+        <div class="proc-kpi" style="animation-delay:0.2s">
+          <div class="proc-kpi__value">94%</div>
+          <div class="proc-kpi__label">On-Time Delivery</div>
+          <div class="proc-kpi__trend">↑ 3% vs last quarter</div>
+        </div>
+      </div>
+
+      <!-- Spend by category -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Spend by Category — FY2026</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">Total: $182M</span>
+        </div>
+        <div>
+          <div class="spend-bar-row">
+            <span class="spend-bar-label">Mining Equipment</span>
+            <div class="spend-bar-track"><div class="spend-bar-fill" style="width:68%"></div></div>
+            <span class="spend-bar-value">$62.4M</span>
+          </div>
+          <div class="spend-bar-row">
+            <span class="spend-bar-label">Maintenance & Repair</span>
+            <div class="spend-bar-track"><div class="spend-bar-fill" style="width:42%;background:#6366f1"></div></div>
+            <span class="spend-bar-value">$38.2M</span>
+          </div>
+          <div class="spend-bar-row">
+            <span class="spend-bar-label">Explosives & Reagents</span>
+            <div class="spend-bar-track"><div class="spend-bar-fill" style="width:28%;background:#f5a623"></div></div>
+            <span class="spend-bar-value">$25.6M</span>
+          </div>
+          <div class="spend-bar-row">
+            <span class="spend-bar-label">Fuel & Energy</span>
+            <div class="spend-bar-track"><div class="spend-bar-fill" style="width:22%;background:#ef4444"></div></div>
+            <span class="spend-bar-value">$20.1M</span>
+          </div>
+          <div class="spend-bar-row">
+            <span class="spend-bar-label">Professional Services</span>
+            <div class="spend-bar-track"><div class="spend-bar-fill" style="width:14%;background:#a855f7"></div></div>
+            <span class="spend-bar-value">$12.8M</span>
+          </div>
+          <div class="spend-bar-row">
+            <span class="spend-bar-label">Other</span>
+            <div class="spend-bar-track"><div class="spend-bar-fill" style="width:10%;background:var(--color-text-muted)"></div></div>
+            <span class="spend-bar-value">$22.9M</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vendor register -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Top Vendors by Spend</span>
+          <button onclick="SESMine.showToast('Full vendor register coming soon.','info')"
+                  style="padding:5px 12px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.72rem;cursor:pointer;font-family:var(--font-body)">
+            View All 340 →
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="vendor-table" aria-label="Vendor register">
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Category</th>
+                <th>FY2026 Spend</th>
+                <th>Contracts</th>
+                <th>Rating</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Caterpillar Inc.</td>
+                <td>Mining Equipment</td>
+                <td>$28.4M</td>
+                <td>4 active</td>
+                <td><span class="rating-stars">★★★★★</span></td>
+                <td><span class="status-badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Approved</span></td>
+              </tr>
+              <tr>
+                <td>Komatsu Ltd.</td>
+                <td>Mining Equipment</td>
+                <td>$19.2M</td>
+                <td>3 active</td>
+                <td><span class="rating-stars">★★★★★</span></td>
+                <td><span class="status-badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Approved</span></td>
+              </tr>
+              <tr>
+                <td>Orica Limited</td>
+                <td>Explosives</td>
+                <td>$14.8M</td>
+                <td>2 active</td>
+                <td><span class="rating-stars">★★★★☆</span></td>
+                <td><span class="status-badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Approved</span></td>
+              </tr>
+              <tr>
+                <td>Sandvik AB</td>
+                <td>Drilling Equipment</td>
+                <td>$11.6M</td>
+                <td>2 active</td>
+                <td><span class="rating-stars">★★★★★</span></td>
+                <td><span class="status-badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Approved</span></td>
+              </tr>
+              <tr>
+                <td>Wesfarmers Chemicals</td>
+                <td>Reagents</td>
+                <td>$8.2M</td>
+                <td>1 active</td>
+                <td><span class="rating-stars">★★★★☆</span></td>
+                <td><span class="status-badge" style="background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.25)">Under Review</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/hubs/_hub-guard.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    SESMineGuard('procurement-hub');
+    const s=SESMine.getSession();
+    if(s){
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #14b8a6;flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
