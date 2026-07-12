@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .auth-wrap{width:100%;max-width:460px;animation:fadeInUp 0.5s ease both;}
+    .auth-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px;text-decoration:none;}
+    .auth-logo img{height:32px;object-fit:contain;}
+    .auth-logo__text{font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;color:var(--color-text-primary);}
+    .auth-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:36px;box-shadow:var(--shadow-lg);}
+    .auth-card__title{font-size:1.2rem;font-weight:800;letter-spacing:-0.03em;margin:0 0 6px;text-align:center;}
+    .auth-card__sub{font-size:0.82rem;color:var(--color-text-secondary);text-align:center;margin:0 0 28px;}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:0.75rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:5px;}
+    .form-group input,.form-group select{width:100%;padding:11px 14px;background:var(--color-bg-input);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);font-size:0.875rem;font-family:var(--font-body);transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(245,166,35,0.15);}
+    .form-group input.error{border-color:var(--color-error);}
+    .form-group input::placeholder{color:var(--color-text-muted);}
+    .password-wrap{position:relative;}
+    .password-wrap input{padding-right:44px;}
+    .password-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-size:1rem;padding:4px;}
+    .password-strength{height:3px;border-radius:999px;margin-top:6px;background:var(--color-border);overflow:hidden;}
+    .password-strength__bar{height:100%;border-radius:999px;transition:width .3s ease,background .3s ease;width:0%;}
+    .password-hint{font-size:0.68rem;color:var(--color-text-muted);margin-top:4px;}
+    .terms-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;font-size:0.78rem;color:var(--color-text-secondary);}
+    .terms-row input{margin-top:2px;flex-shrink:0;}
+    .terms-row a{color:var(--color-accent);text-decoration:none;font-weight:600;}
+    .btn-register{width:100%;padding:13px;background:var(--color-accent);color:#fff;border:none;border-radius:var(--radius-md);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:background .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-register:hover{background:var(--color-accent-dark);box-shadow:0 4px 20px rgba(245,166,35,0.35);}
+    .btn-register:disabled{opacity:0.6;cursor:not-allowed;}
+    .error-banner{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius-md);padding:10px 14px;font-size:0.78rem;color:#ef4444;margin-bottom:16px;display:none;}
+    .free-badge{display:flex;align-items:center;gap:10px;background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:20px;font-size:0.78rem;color:var(--color-text-secondary);}
+    .free-badge__icon{font-size:1.2rem;}
+    .auth-footer{text-align:center;margin-top:20px;font-size:0.78rem;color:var(--color-text-muted);}
+    .auth-footer a{color:var(--color-accent);text-decoration:none;font-weight:600;}
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <a href="/index.html" class="auth-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           alt="SESMine" data-sesmine-logo/>
+      <span class="auth-logo__text">SESMine</span>
+    </a>
+
+    <div class="auth-card">
+      <h1 class="auth-card__title">Create your account</h1>
+      <p class="auth-card__sub">Join 4,200+ mining professionals on SESMine</p>
+
+      <div class="free-badge">
+        <span class="free-badge__icon">🆓</span>
+        <span>Free plan includes <strong>Economics Hub</strong>, Cost Calculator and 5 AI Predictor runs/month.</span>
+      </div>
+
+      <div class="error-banner" id="errorBanner" role="alert"></div>
+
+      <form id="registerForm" onsubmit="handleRegister(event)" novalidate>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" placeholder="Alex" autocomplete="given-name" required/>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" placeholder="Morgan" autocomplete="family-name" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Work Email</label>
+          <input type="email" id="email" placeholder="alex@company.com" autocomplete="email" required/>
+        </div>
+        <div class="form-group">
+          <label for="company">Company (optional)</label>
+          <input type="text" id="company" placeholder="BHP, Rio Tinto, Junior Mining Co…" autocomplete="organization"/>
+        </div>
+        <div class="form-group">
+          <label for="jobTitle">Job Title (optional)</label>
+          <select id="jobTitle">
+            <option value="">Select your role…</option>
+            <option>Mining Engineer</option>
+            <option>Geotechnical Engineer</option>
+            <option>Metallurgist</option>
+            <option>Project Manager</option>
+            <option>Financial Analyst</option>
+            <option>ESG / Sustainability Manager</option>
+            <option>Procurement Manager</option>
+            <option>Safety Manager</option>
+            <option>Executive / Director</option>
+            <option>Consultant</option>
+            <option>Student / Graduate</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="password" placeholder="Minimum 8 characters" autocomplete="new-password" required oninput="checkStrength(this.value)"/>
+            <button type="button" class="password-toggle" id="pwToggle" aria-label="Toggle password">👁</button>
+          </div>
+          <div class="password-strength"><div class="password-strength__bar" id="strengthBar"></div></div>
+          <div class="password-hint" id="strengthHint">Enter a password</div>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" placeholder="Repeat your password" autocomplete="new-password" required/>
+        </div>
+        <div class="terms-row">
+          <input type="checkbox" id="terms" required/>
+          <label for="terms">I agree to the <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a></label>
+        </div>
+        <button type="submit" class="btn-register" id="registerBtn">
+          Create Free Account
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-footer">
+      Already have an account? <a href="/auth/login.html">Sign in →</a>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    if (SESMine.isLoggedIn()) {
+      window.location.href = '/dashboard/main-dashboard.html';
+    }
+
+    document.getElementById('pwToggle').addEventListener('click', function () {
+      const input = document.getElementById('password');
+      const isText = input.type === 'text';
+      input.type   = isText ? 'password' : 'text';
+      this.textContent = isText ? '👁' : '🙈';
+    });
+
+    function checkStrength(val) {
+      const bar  = document.getElementById('strengthBar');
+      const hint = document.getElementById('strengthHint');
+      let score  = 0;
+      if (val.length >= 8)  score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const levels = [
+        { w:'0%',   bg:'transparent',            label:'' },
+        { w:'25%',  bg:'#ef4444',                label:'Weak' },
+        { w:'50%',  bg:'#f5a623',                label:'Fair' },
+        { w:'75%',  bg:'#6366f1',                label:'Good' },
+        { w:'100%', bg:'#2ecc71',                label:'Strong ✓' }
+      ];
+      const level = levels[score] || levels[0];
+      bar.style.width      = level.w;
+      bar.style.background = level.bg;
+      hint.textContent     = level.label;
+      hint.style.color     = level.bg || 'var(--color-text-muted)';
+    }
+
+    function showError(msg) {
+      const b = document.getElementById('errorBanner');
+      b.textContent    = msg;
+      b.style.display  = 'block';
+      b.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      document.getElementById('errorBanner').style.display = 'none';
+
+      const firstName       = document.getElementById('firstName').value.trim();
+      const lastName        = document.getElementById('lastName').value.trim();
+      const email           = document.getElementById('email').value.trim();
+      const company         = document.getElementById('company').value.trim();
+      const password        = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const terms           = document.getElementById('terms').checked;
+      const btn             = document.getElementById('registerBtn');
+
+      if (!firstName || !lastName) { showError('Please enter your first and last name.'); return; }
+      if (!email || !/\S+@\S+\.\S+/.test(email)) { showError('Please enter a valid email address.'); return; }
+      if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+      if (password !== confirmPassword) { showError('Passwords do not match.'); return; }
+      if (!terms) { showError('Please accept the Terms of Service to continue.'); return; }
+
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spinner spinner-sm"></span> Creating account…';
+
+      setTimeout(() => {
+        const result = SESMine.register({ firstName, lastName, email, company, password });
+        if (result.success) {
+          SESMine.showToast(`Welcome to SESMine, ${firstName}! 🎉`, 'success', 4000);
+          setTimeout(() => window.location.href = '/dashboard/main-dashboard.html', 800);
+        } else {
+          showError(result.error);
+          btn.disabled  = false;
+          btn.innerHTML = 'Create Free Account';
+        }
+      }, 900);
+    }
+  </script>
+</body>
+</html>
