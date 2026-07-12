@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Equipment Database — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(245,166,35,0.1);color:var(--color-accent);font-weight:700;border-right:2px solid var(--color-accent);}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .main{overflow-y:auto;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .topbar__breadcrumb span{color:var(--color-accent);font-weight:600;}
+    .content{padding:24px 28px;}
+
+    /* Search bar */
+    .search-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+    .search-input{flex:1;min-width:200px;padding:10px 16px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);font-size:0.875rem;font-family:var(--font-body);transition:border-color .2s;}
+    .search-input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(245,166,35,0.12);}
+    .filter-select{padding:10px 14px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);font-size:0.82rem;font-family:var(--font-body);cursor:pointer;}
+    .filter-select:focus{outline:none;border-color:var(--color-accent);}
+
+    /* Equipment grid */
+    .equip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+    .equip-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;animation:fadeInUp 0.4s ease both;transition:box-shadow .2s,border-color .2s;cursor:pointer;}
+    .equip-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-accent);}
+    .equip-card__img{width:100%;height:140px;object-fit:cover;background:var(--color-bg-deep);}
+    .equip-card__body{padding:16px;}
+    .equip-card__maker{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-accent);margin-bottom:4px;}
+    .equip-card__name{font-size:0.9rem;font-weight:700;color:var(--color-text-primary);margin-bottom:6px;}
+    .equip-card__specs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+    .equip-spec{background:var(--color-bg-deep);border-radius:var(--radius-sm);padding:6px 8px;}
+    .equip-spec__label{font-size:0.6rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.06em;}
+    .equip-spec__value{font-size:0.78rem;font-weight:700;color:var(--color-text-primary);margin-top:1px;}
+    .equip-card__tags{display:flex;gap:6px;flex-wrap:wrap;}
+    .equip-tag{font-size:0.65rem;font-weight:600;padding:2px 8px;border-radius:999px;background:rgba(245,166,35,0.1);color:var(--color-accent);border:1px solid rgba(245,166,35,0.2);}
+
+    .results-count{font-size:0.78rem;color:var(--color-text-muted);margin-bottom:14px;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+      <a href="/products/equipment-database.html" class="active">🗄️ Equipment DB</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar__breadcrumb">Tools → <span>Equipment Database</span></span>
+      <span style="font-size:0.72rem;color:var(--color-text-muted)">2,400+ equipment specs</span>
+    </div>
+    <div class="content">
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Equipment Database</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 20px">Searchable specs for haul trucks, drills, loaders, processing equipment and more.</p>
+
+      <div class="search-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search equipment… e.g. Caterpillar 793, Sandvik DD422"
+               oninput="filterEquipment()"/>
+        <select class="filter-select" id="categoryFilter" onchange="filterEquipment()">
+          <option value="">All Categories</option>
+          <option value="haul_truck">Haul Trucks</option>
+          <option value="drill">Drill Rigs</option>
+          <option value="loader">Loaders / LHDs</option>
+          <option value="excavator">Excavators / Shovels</option>
+          <option value="processing">Processing Equipment</option>
+          <option value="support">Support Equipment</option>
+        </select>
+        <select class="filter-select" id="makerFilter" onchange="filterEquipment()">
+          <option value="">All Manufacturers</option>
+          <option value="Caterpillar">Caterpillar</option>
+          <option value="Komatsu">Komatsu</option>
+          <option value="Sandvik">Sandvik</option>
+          <option value="Epiroc">Epiroc</option>
+          <option value="Liebherr">Liebherr</option>
+          <option value="Metso">Metso Outotec</option>
+        </select>
+      </div>
+
+      <div class="results-count" id="resultsCount">Showing 12 of 2,400+ equipment items</div>
+      <div class="equip-grid" id="equipGrid"></div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    if (!SESMine.requireAuth()) {}
+    const s=SESMine.getSession();
+    if(s){
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--color-accent);flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+
+    const EQUIPMENT = [
+      { id:1, maker:'Caterpillar', name:'797F Haul Truck', category:'haul_truck',
+        img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60&fit=crop',
+        specs:[{l:'Payload',v:'363 t'},{l:'GVW',v:'687 t'},{l:'Engine',v:'4000 HP'},{l:'Fuel',v:'Diesel'}],
+        tags:['AHS Ready','Open Pit','Ultra Class'] },
+      { id:2, maker:'Komatsu', name:'930E-5 Haul Truck', category:'haul_truck',
+        img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=60&fit=crop',
+        specs:[{l:'Payload',v:'291 t'},{l:'GVW',v:'553 t'},{l:'Engine',v:'3500 HP'},{l:'Fuel',v:'Diesel / AHS'}],
+        tags:['AHS Ready','Open Pit','Large Class'] },
+      { id:3, maker:'Sandvik', name:'TH665B Underground Truck', category:'haul_truck',
+        img:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=60&fit=crop',
+        specs:[{l:'Payload',v:'65 t'},{l:'Power',v:'BEV / Diesel'},{l:'Battery',v:'600 kWh'},{l:'Type',v:'Underground'}],
+        tags:['Battery Electric','Underground','Zero Emission'] },
+      { id:4, maker:'Epiroc', name:'Pit Viper 351 Drill', category:'drill',
+        img:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=60&fit=crop',
+        specs:[{l:'Hole Dia.',v:'270–406 mm'},{l:'Depth',v:'Up to 60 m'},{l:'Power',v:'1,200 kW'},{l:'Type',v:'Rotary Blast'}],
+        tags:['Open Pit','Autonomous','Large Diameter'] },
+      { id:5, maker:'Sandvik', name:'DD422i Development Drill', category:'drill',
+        img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60&fit=crop',
+        specs:[{l:'Hole Dia.',v:'43–64 mm'},{l:'Coverage',v:'Up to 118 m²'},{l:'Booms',v:'2'},{l:'Type',v:'Underground'}],
+        tags:['Underground','Automated','Development'] },
+      { id:6, maker:'Caterpillar', name:'R2900 XE LHD', category:'loader',
+        img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60&fit=crop',
+        specs:[{l:'Bucket',v:'15 m³'},{l:'Payload',v:'29 t'},{l:'Power',v:'BEV'},{l:'Type',v:'Underground'}],
+        tags:['Battery Electric','Underground','LHD'] },
+      { id:7, maker:'Liebherr', name:'R 9400 Mining Excavator', category:'excavator',
+        img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=60&fit=crop',
+        specs:[{l:'Bucket',v:'22–28 m³'},{l:'Weight',v:'390 t'},{l:'Engine',v:'2×1,492 kW'},{l:'Type',v:'Open Pit'}],
+        tags:['Open Pit','Backhoe','Large Class'] },
+      { id:8, maker:'Komatsu', name:'PC8000-11 Face Shovel', category:'excavator',
+        img:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=60&fit=crop',
+        specs:[{l:'Bucket',v:'42–52 m³'},{l:'Weight',v:'810 t'},{l:'Engine',v:'4×1,715 kW'},{l:'Type',v:'Open Pit'}],
+        tags:['Open Pit','Face Shovel','Ultra Class'] },
+      { id:9, maker:'Metso', name:'Superior MKIII 60-89 Gyratory', category:'processing',
+        img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60&fit=crop',
+        specs:[{l:'Feed Size',v:'Up to 1,500 mm'},{l:'Throughput',v:'Up to 14,000 t/h'},{l:'Power',v:'750 kW'},{l:'Type',v:'Primary Crush'}],
+        tags:['Primary Crusher','High Throughput','Gyratory'] },
+      { id:10, maker:'Metso', name:'Vertimill VTM-3000', category:'processing',
+        img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60&fit=crop',
+        specs:[{l:'Power',v:'2,240 kW'},{l:'Feed Size',v:'6 mm F80'},{l:'Media',v:'Steel Balls'},{l:'Type',v:'Regrind Mill'}],
+        tags:['Regrind','Energy Efficient','Vertical Mill'] },
+      { id:11, maker:'Epiroc', name:'MT65 Underground Truck', category:'haul_truck',
+        img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60&fit=crop',
+        specs:[{l:'Payload',v:'65 t'},{l:'Power',v:'BEV'},{l:'Battery',v:'565 kWh'},{l:'Type',v:'Underground'}],
+        tags:['Battery Electric','Underground','Zero Emission'] },
+      { id:12, maker:'Caterpillar', name:'6060 AC Mining Shovel', category:'excavator',
+        img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60&fit=crop',
+        specs:[{l:'Bucket',v:'28–35 m³'},{l:'Weight',v:'550 t'},{l:'Engine',v:'AC Electric'},{l:'Type',v:'Open Pit'}],
+        tags:['Open Pit','Electric Drive','Face Shovel'] }
+    ];
+
+    let filtered = [...EQUIPMENT];
+
+    function filterEquipment() {
+      const q    = document.getElementById('searchInput').value.toLowerCase();
+      const cat  = document.getElementById('categoryFilter').value;
+      const maker= document.getElementById('makerFilter').value;
+      filtered = EQUIPMENT.filter(e => {
+        const matchQ     = !q    || e.name.toLowerCase().includes(q) || e.maker.toLowerCase().includes(q) || e.tags.some(t=>t.toLowerCase().includes(q));
+        const matchCat   = !cat  || e.category === cat;
+        const matchMaker = !maker|| e.maker === maker;
+        return matchQ && matchCat && matchMaker;
+      });
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('equipGrid');
+      document.getElementById('resultsCount').textContent =
+        `Showing ${filtered.length} of 2,400+ equipment items`;
+      grid.innerHTML = filtered.map((e, i) => `
+        <div class="equip-card animate-fadeInUp" style="animation-delay:${i*0.04}s"
+             onclick="SESMine.showToast('Full spec sheet for ${e.name} — coming soon.','info')">
+          <img src="${e.img}" alt="${e.name}" class="equip-card__img"
+               onerror="this.style.background='var(--color-bg-deep)';this.style.height='80px'"/>
+          <div class="equip-card__body">
+            <div class="equip-card__maker">${e.maker}</div>
+            <div class="equip-card__name">${e.name}</div>
+            <div class="equip-card__specs">
+              ${e.specs.map(s=>`
+                <div class="equip-spec">
+                  <div class="equip-spec__label">${s.l}</div>
+                  <div class="equip-spec__value">${s.v}</div>
+                </div>`).join('')}
+            </div>
+            <div class="equip-card__tags">
+              ${e.tags.map(t=>`<span class="equip-tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    renderGrid();
+  </script>
+</body>
+</html>
+
