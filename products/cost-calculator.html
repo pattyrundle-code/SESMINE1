@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cost Calculator — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(245,166,35,0.1);color:var(--color-accent);font-weight:700;border-right:2px solid var(--color-accent);}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .main{overflow-y:auto;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .topbar__breadcrumb span{color:var(--color-accent);font-weight:600;}
+    .content{padding:24px 28px;max-width:900px;}
+
+    .calc-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:28px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .calc-section-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-accent);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--color-border);}
+    .form-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:0.75rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:5px;}
+    .form-group input,.form-group select{width:100%;padding:9px 13px;background:var(--color-bg-input);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);font-size:0.875rem;font-family:var(--font-body);transition:border-color .2s;box-sizing:border-box;}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(245,166,35,0.12);}
+    .form-group .unit{font-size:0.68rem;color:var(--color-text-muted);margin-top:3px;}
+
+    /* Results */
+    .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+    .result-kpi{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;text-align:center;}
+    .result-kpi__value{font-size:1.4rem;font-weight:900;letter-spacing:-0.03em;color:var(--color-accent);}
+    .result-kpi__label{font-size:0.68rem;color:var(--color-text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.07em;}
+
+    .cost-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--color-border);font-size:0.82rem;}
+    .cost-breakdown-row:last-child{border-bottom:none;font-weight:700;color:var(--color-text-primary);}
+    .cost-breakdown-row__label{color:var(--color-text-secondary);}
+    .cost-breakdown-row__value{font-weight:600;color:var(--color-text-primary);}
+
+    .btn-calc{padding:12px 28px;background:var(--color-accent);color:#fff;border:none;border-radius:var(--radius-md);font-size:0.9rem;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:background .2s,box-shadow .2s;display:inline-flex;align-items:center;gap:8px;}
+    .btn-calc:hover{background:var(--color-accent-dark);box-shadow:0 4px 16px rgba(245,166,35,0.3);}
+    .btn-reset{padding:12px 20px;background:none;color:var(--color-text-secondary);border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .15s;margin-left:10px;}
+    .btn-reset:hover{border-color:var(--color-accent);color:var(--color-accent);}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html" class="active">🧮 Cost Calculator</a>
+      <a href="/products/equipment-database.html">🗄️ Equipment DB</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar__breadcrumb">Tools → <span>Operating Cost Calculator</span></span>
+    </div>
+    <div class="content">
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Operating Cost Calculator</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Calculate C1, AISC and all-in costs for open pit and underground mining operations.</p>
+
+      <div class="calc-card">
+        <div class="calc-section-title">⛏️ Mining Parameters</div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Ore Mined (Mtpa)</label>
+            <input type="number" id="oreMined" value="10" min="0.1" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Waste Mined (Mtpa)</label>
+            <input type="number" id="wasteMined" value="40" min="0" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Head Grade (%)</label>
+            <input type="number" id="headGrade" value="0.8" min="0.001" step="0.001"/>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Mining Cost ($/t moved)</label>
+            <input type="number" id="miningCost" value="3.20" min="0" step="0.01"/>
+          </div>
+          <div class="form-group">
+            <label>Processing Cost ($/t ore)</label>
+            <input type="number" id="processingCost" value="8.50" min="0" step="0.01"/>
+          </div>
+          <div class="form-group">
+            <label>G&A Cost ($/t ore)</label>
+            <input type="number" id="gaCost" value="2.10" min="0" step="0.01"/>
+          </div>
+        </div>
+
+        <div class="calc-section-title" style="margin-top:8px">🏭 Processing & Recovery</div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Metallurgical Recovery (%)</label>
+            <input type="number" id="recovery" value="88" min="1" max="100" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Payability (%)</label>
+            <input type="number" id="payability" value="96.5" min="1" max="100" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>TC/RC ($/t conc.)</label>
+            <input type="number" id="tcrc" value="80" min="0" step="1"/>
+          </div>
+        </div>
+
+        <div class="calc-section-title" style="margin-top:8px">💰 Sustaining & Corporate</div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Sustaining CAPEX ($/oz or $/t)</label>
+            <input type="number" id="sustainingCapex" value="120" min="0" step="1"/>
+          </div>
+          <div class="form-group">
+            <label>Royalties (%)</label>
+            <input type="number" id="royalties" value="2.5" min="0" max="20" step="0.1"/>
+          </div>
+          <div class="form-group">
+            <label>Commodity Price ($/t or $/oz)</label>
+            <input type="number" id="commodityPrice" value="9842" min="1" step="1"/>
+          </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <button class="btn-calc" onclick="calculate()">
+            🧮 Calculate Costs
+          </button>
+          <button class="btn-reset" onclick="resetForm()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="calc-card" id="resultsCard" style="display:none">
+        <div class="calc-section-title">📊 Cost Results</div>
+        <div class="results-grid">
+          <div class="result-kpi">
+            <div class="result-kpi__value" id="c1Cost">—</div>
+            <div class="result-kpi__label">C1 Cash Cost ($/t)</div>
+          </div>
+          <div class="result-kpi">
+            <div class="result-kpi__value" id="aiscCost">—</div>
+            <div class="result-kpi__label">AISC ($/t)</div>
+          </div>
+          <div class="result-kpi">
+            <div class="result-kpi__value" id="margin" style="color:#2ecc71">—</div>
+            <div class="result-kpi__label">Operating Margin</div>
+          </div>
+        </div>
+        <div id="costBreakdown"></div>
+        <div style="margin-top:16px;padding:12px 16px;background:var(--color-bg-deep);border-radius:var(--radius-md);font-size:0.78rem;color:var(--color-text-secondary)">
+          💡 <strong style="color:var(--color-text-primary)">Note:</strong> These are indicative estimates. Actual costs depend on site-specific conditions, labour agreements, power costs and ore variability.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    if (!SESMine.requireAuth()) {}
+    const s = SESMine.getSession();
+    if (s) {
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--color-accent);flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+
+    function v(id){ return parseFloat(document.getElementById(id).value)||0; }
+
+    function calculate() {
+      const oreMined       = v('oreMined')   * 1e6; // tonnes
+      const wasteMined     = v('wasteMined') * 1e6;
+      const totalMoved     = oreMined + wasteMined;
+      const headGrade      = v('headGrade')  / 100;
+      const miningCost     = v('miningCost');
+      const processingCost = v('processingCost');
+      const gaCost         = v('gaCost');
+      const recovery       = v('recovery')   / 100;
+      const payability     = v('payability') / 100;
+      const tcrc           = v('tcrc');
+      const sustainCapex   = v('sustainingCapex');
+      const royaltyPct     = v('royalties')  / 100;
+      const price          = v('commodityPrice');
+
+      const metalProduced  = oreMined * headGrade * recovery; // tonnes metal
+      const payableMetal   = metalProduced * payability;
+
+      if (payableMetal <= 0) {
+        SESMine.showToast('Please enter valid parameters.','warning');
+        return;
+      }
+
+      // C1 = mining + processing + G&A + TC/RC (per tonne payable metal)
+      const miningTotal     = totalMoved * miningCost;
+      const processingTotal = oreMined   * processingCost;
+      const gaTotal         = oreMined   * gaCost;
+      const tcrcTotal       = (metalProduced / 1000) * tcrc * 1000; // rough approx
+
+      const c1Total  = miningTotal + processingTotal + gaTotal + tcrcTotal;
+      const c1PerT   = c1Total / payableMetal;
+
+      // AISC = C1 + sustaining CAPEX + royalties
+      const royaltyTotal = payableMetal * price * royaltyPct;
+      const sustainTotal = payableMetal * sustainCapex;
+      const aiscTotal    = c1Total + sustainTotal + royaltyTotal;
+      const aiscPerT     = aiscTotal / payableMetal;
+
+      const revenuePerT  = price * payability;
+      const marginPct    = ((revenuePerT - aiscPerT) / revenuePerT * 100);
+
+      document.getElementById('c1Cost').textContent   = '$' + Math.round(c1PerT).toLocaleString();
+      document.getElementById('aiscCost').textContent = '$' + Math.round(aiscPerT).toLocaleString();
+      document.getElementById('margin').textContent   = marginPct.toFixed(1) + '%';
+      document.getElementById('margin').style.color   = marginPct > 0 ? '#2ecc71' : '#ef4444';
+
+      document.getElementById('costBreakdown').innerHTML = `
+        <div class="cost-breakdown-row"><span class="cost-breakdown-row__label">Mining Cost (total moved)</span><span class="cost-breakdown-row__value">$${(miningTotal/1e6).toFixed(1)}M/yr · $${miningCost.toFixed(2)}/t moved</span></div>
+        <div class="cost-breakdown-row"><span class="cost-breakdown-row__label">Processing Cost</span><span class="cost-breakdown-row__value">$${(processingTotal/1e6).toFixed(1)}M/yr · $${processingCost.toFixed(2)}/t ore</span></div>
+        <div class="cost-breakdown-row"><span class="cost-breakdown-row__label">G&A Cost</span><span class="cost-breakdown-row__value">$${(gaTotal/1e6).toFixed(1)}M/yr · $${gaCost.toFixed(2)}/t ore</span></div>
+        <div class="cost-breakdown-row"><span class="cost-breakdown-row__label">TC/RC</span><span class="cost-breakdown-row__value">$${(tcrcTotal/1e6).toFixed(1)}M/yr</span></div>
+        <div class="cost-breakdown-row"><span class="cost-breakdown-row__label">Sustaining CAPEX</span><span class="cost-breakdown-row__value">$${(sustainTotal/1e6).toFixed(1)}M/yr</span></div>
+        <div class="cost-breakdown-row"><span class="cost-breakdown-row__label">Royalties</span><span class="cost-breakdown-row__value">$${(royaltyTotal/1e6).toFixed(1)}M/yr</span></div>
+        <div class="cost-breakdown-row" style="margin-top:4px;padding-top:12px;border-top:2px solid var(--color-border)"><span>Annual Metal Production</span><span class="cost-breakdown-row__value">${(payableMetal/1000).toFixed(1)} kt payable</span></div>
+        <div class="cost-breakdown-row"><span>Revenue (at $${price.toLocaleString()}/t)</span><span class="cost-breakdown-row__value" style="color:#2ecc71">$${(payableMetal*price/1e6).toFixed(1)}M/yr</span></div>
+      `;
+
+      document.getElementById('resultsCard').style.display = 'block';
+      document.getElementById('resultsCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
+      SESMine.showToast('Cost calculation complete!','success');
+    }
+
+    function resetForm() {
+      document.getElementById('resultsCard').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
