@@ -1,0 +1,38 @@
+{
+  "name": "sesmine",
+  "version": "1.0.0",
+  "description": "SESMine — Mining Intelligence Platform",
+  "private": true,
+  "scripts": {
+    "start":       "npx serve . -p 3000",
+    "dev":         "npx serve . -p 3000 --no-clipboard",
+    "build":       "npm run css:minify && npm run js:minify",
+    "css:minify":  "npx clean-css-cli -o assets/css/main.min.css assets/css/main.css && npx clean-css-cli -o assets/css/animations.min.css assets/css/animations.css",
+    "js:minify":   "npx terser js/config.js -o js/config.min.js --compress --mangle && npx terser js/main.js -o js/main.min.js --compress --mangle",
+    "lint:html":   "npx htmlhint '**/*.html' --ignore 'node_modules/**'",
+    "lint:css":    "npx stylelint 'assets/css/**/*.css'",
+    "lint:js":     "npx eslint 'js/**/*.js' 'assets/js/**/*.js'",
+    "lint":        "npm run lint:html && npm run lint:css && npm run lint:js",
+    "a11y":        "npx serve . -p 8080 & sleep 2 && npx axe http://localhost:8080/index.html",
+    "validate":    "npm run lint && echo 'All checks passed ✓'"
+  },
+  "devDependencies": {
+    "clean-css-cli":  "^5.6.3",
+    "eslint":         "^8.57.0",
+    "htmlhint":       "^1.1.4",
+    "imagemin-cli":   "^8.0.0",
+    "serve":          "^14.2.3",
+    "stylelint":      "^16.6.1",
+    "stylelint-config-standard": "^36.0.1",
+    "terser":         "^5.31.1",
+    "@axe-core/cli":  "^4.9.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm":  ">=9.0.0"
+  },
+  "keywords": ["mining", "intelligence", "capex", "commodities", "dashboard"],
+  "author": "SESMine Pty Ltd <hello@sesmine.com>",
+  "license": "PROPRIETARY",
+  "homepage": "https://sesmine.com"
+}
