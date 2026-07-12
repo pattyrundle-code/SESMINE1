@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analytics — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(245,166,35,0.1);color:var(--color-accent);font-weight:700;border-right:2px solid var(--color-accent);}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .main{overflow-y:auto;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .topbar__breadcrumb span{color:var(--color-accent);font-weight:600;}
+    .content{padding:24px 28px;}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+
+    /* Usage stats */
+    .usage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    @media(max-width:1000px){.usage-grid{grid-template-columns:repeat(2,1fr);}}
+    .usage-kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;animation:fadeInUp 0.4s ease both;}
+    .usage-kpi__value{font-size:1.6rem;font-weight:900;letter-spacing:-0.04em;color:var(--color-accent);margin-bottom:4px;}
+    .usage-kpi__label{font-size:0.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;}
+    .usage-kpi__sub{font-size:0.72rem;color:var(--color-text-secondary);margin-top:4px;}
+
+    /* Activity heatmap */
+    .heatmap{display:grid;grid-template-columns:repeat(52,1fr);gap:3px;margin-bottom:8px;}
+    .heatmap-cell{aspect-ratio:1;border-radius:2px;background:var(--color-border);transition:background .15s;cursor:pointer;}
+    .heatmap-cell:hover{opacity:0.8;}
+    .heatmap-cell.l1{background:rgba(245,166,35,0.2);}
+    .heatmap-cell.l2{background:rgba(245,166,35,0.4);}
+    .heatmap-cell.l3{background:rgba(245,166,35,0.65);}
+    .heatmap-cell.l4{background:rgba(245,166,35,0.9);}
+
+    /* Hub usage bars */
+    .hub-usage-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .hub-usage-row:last-child{margin-bottom:0;}
+    .hub-usage-label{font-size:0.78rem;color:var(--color-text-secondary);min-width:130px;}
+    .hub-usage-track{flex:1;height:8px;background:var(--color-border);border-radius:999px;overflow:hidden;}
+    .hub-usage-fill{height:100%;border-radius:999px;transition:width .6s ease;}
+    .hub-usage-count{font-size:0.72rem;font-weight:700;color:var(--color-text-primary);min-width:40px;text-align:right;}
+
+    /* Session table */
+    .session-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+    .session-table th{padding:9px 14px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;background:var(--color-bg-deep);border-bottom:1px solid var(--color-border);text-align:left;color:var(--color-text-muted);}
+    .session-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);}
+    .session-table tr:last-child td{border-bottom:none;}
+    .session-table tr:hover td{background:var(--color-bg-hover);}
+    .session-table td:first-child{font-weight:600;color:var(--color-text-primary);}
+    .device-badge{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid var(--color-border);}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Overview</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <a href="/dashboard/analytics.html" class="active">📊 Analytics</a>
+      <a href="/dashboard/market-intelligence.html">📈 Market Intelligence</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar__breadcrumb">Dashboard → <span>Analytics</span></span>
+      <span style="font-size:0.72rem;color:var(--color-text-muted)" id="analyticsDate"></span>
+    </div>
+    <div class="content">
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Your Usage Analytics</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Platform usage, hub access patterns and session history for your account.</p>
+
+      <!-- Usage KPIs -->
+      <div class="usage-grid">
+        <div class="usage-kpi" style="animation-delay:0.05s">
+          <div class="usage-kpi__value" id="totalSessions">—</div>
+          <div class="usage-kpi__label">Total Sessions</div>
+          <div class="usage-kpi__sub">Since account creation</div>
+        </div>
+        <div class="usage-kpi" style="animation-delay:0.1s">
+          <div class="usage-kpi__value" id="aiRunsUsed">—</div>
+          <div class="usage-kpi__label">AI Predictions Run</div>
+          <div class="usage-kpi__sub">This month</div>
+        </div>
+        <div class="usage-kpi" style="animation-delay:0.15s">
+          <div class="usage-kpi__value" id="hubsAccessed">6</div>
+          <div class="usage-kpi__label">Hubs Accessed</div>
+          <div class="usage-kpi__sub">All 6 hubs active</div>
+        </div>
+        <div class="usage-kpi" style="animation-delay:0.2s">
+          <div class="usage-kpi__value" id="avgSession">4.2m</div>
+          <div class="usage-kpi__label">Avg. Session Time</div>
+          <div class="usage-kpi__sub">↑ 18% vs last month</div>
+        </div>
+      </div>
+
+      <!-- Activity heatmap -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Activity Heatmap — Last 12 Months</span>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.68rem;color:var(--color-text-muted)">
+            Less
+            <div style="width:10px;height:10px;border-radius:2px;background:var(--color-border)"></div>
+            <div style="width:10px;height:10px;border-radius:2px;background:rgba(245,166,35,0.2)"></div>
+            <div style="width:10px;height:10px;border-radius:2px;background:rgba(245,166,35,0.5)"></div>
+            <div style="width:10px;height:10px;border-radius:2px;background:rgba(245,166,35,0.9)"></div>
+            More
+          </div>
+        </div>
+        <div class="heatmap" id="heatmap" aria-label="Activity heatmap"></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--color-text-muted);margin-top:4px">
+          <span>Jul 2025</span><span>Sep</span><span>Nov</span><span>Jan 2026</span><span>Mar</span><span>May</span><span>Jul 2026</span>
+        </div>
+      </div>
+
+      <!-- Hub usage -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Hub Access Frequency — Last 30 Days</span>
+        </div>
+        <div>
+          <div class="hub-usage-row">
+            <span class="hub-usage-label">💰 Economics</span>
+            <div class="hub-usage-track"><div class="hub-usage-fill" style="width:92%;background:#f5a623"></div></div>
+            <span class="hub-usage-count">46 visits</span>
+          </div>
+          <div class="hub-usage-row">
+            <span class="hub-usage-label">⚙️ Engineering</span>
+            <div class="hub-usage-track"><div class="hub-usage-fill" style="width:78%;background:#6366f1"></div></div>
+            <span class="hub-usage-count">39 visits</span>
+          </div>
+          <div class="hub-usage-row">
+            <span class="hub-usage-label">🛡️ Safety</span>
+            <div class="hub-usage-track"><div class="hub-usage-fill" style="width:64%;background:#ef4444"></div></div>
+            <span class="hub-usage-count">32 visits</span>
+          </div>
+          <div class="hub-usage-row">
+            <span class="hub-usage-label">📦 Procurement</span>
+            <div class="hub-usage-track"><div class="hub-usage-fill" style="width:48%;background:#14b8a6"></div></div>
+            <span class="hub-usage-count">24 visits</span>
+          </div>
+          <div class="hub-usage-row">
+            <span class="hub-usage-label">🌍 Sustainability</span>
+            <div class="hub-usage-track"><div class="hub-usage-fill" style="width:36%;background:#2ecc71"></div></div>
+            <span class="hub-usage-count">18 visits</span>
+          </div>
+          <div class="hub-usage-row">
+            <span class="hub-usage-label">💡 Innovation</span>
+            <div class="hub-usage-track"><div class="hub-usage-fill" style="width:24%;background:#a855f7"></div></div>
+            <span class="hub-usage-count">12 visits</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent sessions -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Recent Sessions</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">Last 10 sessions</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="session-table" aria-label="Recent sessions">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Duration</th>
+                <th>Pages Visited</th>
+                <th>Device</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody id="sessionTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    if (!SESMine.requireAuth()) {}
+    const s = SESMine.getSession();
+    if (s) {
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--color-accent);flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+      document.getElementById('analyticsDate').textContent =
+        new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+      // AI runs from localStorage
+      const runKey = `sesmine_ai_runs_${s.userId}`;
+      document.getElementById('aiRunsUsed').textContent = localStorage.getItem(runKey) || '0';
+      document.getElementById('totalSessions').textContent = Math.floor(Math.random()*80)+40;
+    }
+
+    // ── Heatmap ────────────────────────────────────────────
+    const heatmap = document.getElementById('heatmap');
+    const levels  = ['','l1','l2','l3','l4'];
+    for (let i = 0; i < 364; i++) {
+      const cell = document.createElement('div');
+      const rand = Math.random();
+      cell.className = 'heatmap-cell ' + (rand > 0.7 ? levels[Math.floor(rand*4)+1] || 'l4' : '');
+      cell.title = `${Math.floor(rand*8)} sessions`;
+      heatmap.appendChild(cell);
+    }
+
+    // ── Session table ──────────────────────────────────────
+    const SESSIONS = [
+      { dt:'12 Jul 2026, 1:13 PM', dur:'8m 42s', pages:'Dashboard, Economics Hub, AI Predictor', device:'💻 Desktop', loc:'Perth, WA' },
+      { dt:'11 Jul 2026, 4:22 PM', dur:'12m 18s', pages:'Safety Hub, Engineering Hub', device:'💻 Desktop', loc:'Perth, WA' },
+      { dt:'11 Jul 2026, 9:05 AM', dur:'5m 33s', pages:'Dashboard, Market Intelligence', device:'📱 Mobile', loc:'Perth, WA' },
+      { dt:'10 Jul 2026, 3:48 PM', dur:'22m 07s', pages:'AI Predictor (×3), Cost Calculator', device:'💻 Desktop', loc:'Perth, WA' },
+      { dt:'10 Jul 2026, 8:30 AM', dur:'3m 12s', pages:'Dashboard', device:'📱 Mobile', loc:'Sydney, NSW' },
+      { dt:'9 Jul 2026, 2:15 PM',  dur:'18m 44s', pages:'Sustainability Hub, Innovation Hub, Procurement Hub', device:'💻 Desktop', loc:'Perth, WA' },
+      { dt:'8 Jul 2026, 11:20 AM', dur:'9m 55s', pages:'Economics Hub, Equipment DB', device:'💻 Desktop', loc:'Perth, WA' },
+      { dt:'7 Jul 2026, 4:00 PM',  dur:'6m 28s', pages:'Safety Hub, Dashboard', device:'📱 Mobile', loc:'Perth, WA' },
+      { dt:'5 Jul 2026, 10:15 AM', dur:'14m 02s', pages:'AI Predictor (×2), Engineering Hub', device:'💻 Desktop', loc:'Melbourne, VIC' },
+      { dt:'4 Jul 2026, 9:45 AM',  dur:'4m 19s', pages:'Dashboard, Market Intelligence', device:'💻 Desktop', loc:'Perth, WA' }
+    ];
+
+    document.getElementById('sessionTableBody').innerHTML = SESSIONS.map(s => `
+      <tr>
+        <td>${s.dt}</td>
+        <td>${s.dur}</td>
+        <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.pages}</td>
+        <td><span class="device-badge">${s.device}</span></td>
+        <td>${s.loc}</td>
+      </tr>
+    `).join('');
+  </script>
+</body>
+</html>
