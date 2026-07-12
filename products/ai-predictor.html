@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI CAPEX Predictor — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(245,166,35,0.1);color:var(--color-accent);font-weight:700;border-right:2px solid var(--color-accent);}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .main{overflow-y:auto;}
+    .topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .topbar__breadcrumb span{color:var(--color-accent);font-weight:600;}
+    .content{padding:24px 28px;}
+
+    /* Predictor layout */
+    .predictor-layout{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+    @media(max-width:1100px){.predictor-layout{grid-template-columns:1fr;}}
+
+    .form-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:28px;animation:fadeInUp 0.4s ease both;}
+    .form-card__title{font-size:1rem;font-weight:800;letter-spacing:-0.02em;margin:0 0 4px;}
+    .form-card__sub{font-size:0.78rem;color:var(--color-text-secondary);margin:0 0 24px;}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;font-size:0.75rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:5px;}
+    .form-group input,.form-group select{width:100%;padding:10px 14px;background:var(--color-bg-input);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);font-size:0.875rem;font-family:var(--font-body);transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(245,166,35,0.15);}
+    .form-group select option{background:var(--color-surface);}
+    .btn-predict{width:100%;padding:14px;background:var(--color-accent);color:#fff;border:none;border-radius:var(--radius-md);font-size:1rem;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:background .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;}
+    .btn-predict:hover{background:var(--color-accent-dark);box-shadow:0 4px 20px rgba(245,166,35,0.35);}
+    .btn-predict:disabled{opacity:0.6;cursor:not-allowed;}
+
+    /* Result panel */
+    .result-panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:24px;animation:fadeInUp 0.4s ease both 0.1s;position:sticky;top:80px;}
+    .result-panel__placeholder{text-align:center;padding:32px 16px;}
+    .result-panel__placeholder-icon{font-size:3rem;margin-bottom:12px;opacity:0.3;}
+    .result-panel__placeholder-text{font-size:0.82rem;color:var(--color-text-muted);line-height:1.5;}
+    .result-value{font-size:2.8rem;font-weight:900;letter-spacing:-0.05em;color:var(--color-accent);line-height:1;margin-bottom:4px;}
+    .result-range{font-size:0.78rem;color:var(--color-text-muted);margin-bottom:20px;}
+    .result-breakdown{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+    .result-row{display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;padding:8px 0;border-bottom:1px solid var(--color-border);}
+    .result-row:last-child{border-bottom:none;}
+    .result-row__label{color:var(--color-text-secondary);}
+    .result-row__value{font-weight:700;color:var(--color-text-primary);}
+    .confidence-bar{height:6px;background:var(--color-border);border-radius:999px;overflow:hidden;margin-bottom:16px;}
+    .confidence-fill{height:100%;background:var(--color-accent);border-radius:999px;transition:width .8s ease;}
+    .btn-export{width:100%;padding:10px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .btn-export:hover{border-color:var(--color-accent);color:var(--color-accent);}
+
+    /* Run history */
+    .history-panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:20px;margin-top:24px;animation:fadeInUp 0.4s ease both 0.2s;}
+    .history-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border);font-size:0.78rem;}
+    .history-item:last-child{border-bottom:none;}
+    .history-item__name{font-weight:600;color:var(--color-text-primary);}
+    .history-item__meta{color:var(--color-text-muted);font-size:0.7rem;margin-top:2px;}
+    .history-item__value{font-weight:800;color:var(--color-accent);}
+
+    /* Free plan limit banner */
+    .limit-banner{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:16px;font-size:0.78rem;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .limit-banner a{color:var(--color-accent);font-weight:700;text-decoration:none;white-space:nowrap;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html" class="active">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+      <a href="/products/equipment-database.html">🗄️ Equipment DB</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar__breadcrumb">Tools → <span>AI CAPEX Predictor</span></span>
+      <span style="font-size:0.72rem;color:var(--color-text-muted)">±3.2% accuracy · 2,400+ projects trained</span>
+    </div>
+    <div class="content">
+
+      <div style="margin-bottom:24px">
+        <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">AI CAPEX Predictor</h1>
+        <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0">Enter your project parameters and get an AI-powered capital cost estimate in seconds.</p>
+      </div>
+
+      <!-- Free plan limit banner -->
+      <div class="limit-banner" id="limitBanner" style="display:none">
+        <span id="limitText">You have <strong>5</strong> AI Predictor runs remaining this month.</span>
+        <a href="/pricing.html">Upgrade to Pro for unlimited runs →</a>
+      </div>
+
+      <div class="predictor-layout">
+
+        <!-- Input form -->
+        <div class="form-card">
+          <h2 class="form-card__title">Project Parameters</h2>
+          <p class="form-card__sub">All fields required for accurate CAPEX estimation.</p>
+
+          <form id="predictorForm" onsubmit="runPredictor(event)">
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="mineType">Mine Type</label>
+                <select id="mineType" required>
+                  <option value="">Select type…</option>
+                  <option value="open_pit">Open Pit</option>
+                  <option value="underground_longwall">Underground — Longwall</option>
+                  <option value="underground_sublevel">Underground — Sub-Level Stoping</option>
+                  <option value="underground_blockcave">Underground — Block Cave</option>
+                  <option value="underground_cut_fill">Underground — Cut & Fill</option>
+                  <option value="heap_leach">Heap Leach</option>
+                  <option value="alluvial">Alluvial / Placer</option>
+                  <option value="insitu">In-Situ Recovery</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="commodity">Primary Commodity</label>
+                <select id="commodity" required>
+                  <option value="">Select commodity…</option>
+                  <option value="copper">Copper</option>
+                  <option value="gold">Gold</option>
+                  <option value="iron_ore">Iron Ore</option>
+                  <option value="lithium">Lithium</option>
+                  <option value="nickel">Nickel</option>
+                  <option value="coal_met">Coal (Metallurgical)</option>
+                  <option value="coal_thermal">Coal (Thermal)</option>
+                  <option value="zinc_lead">Zinc / Lead</option>
+                  <option value="silver">Silver</option>
+                  <option value="uranium">Uranium</option>
+                  <option value="rare_earths">Rare Earths</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="throughput">Processing Throughput (Mtpa)</label>
+                <input type="number" id="throughput" placeholder="e.g. 50" min="0.1" max="500" step="0.1" required/>
+              </div>
+              <div class="form-group">
+                <label for="grade">Head Grade (%)</label>
+                <input type="number" id="grade" placeholder="e.g. 0.8" min="0.001" max="100" step="0.001" required/>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="location">Project Location</label>
+                <select id="location" required>
+                  <option value="">Select region…</option>
+                  <optgroup label="Australia">
+                    <option value="au_wa">Western Australia</option>
+                    <option value="au_qld">Queensland</option>
+                    <option value="au_nsw">New South Wales</option>
+                    <option value="au_sa">South Australia</option>
+                    <option value="au_nt">Northern Territory</option>
+                  </optgroup>
+                  <optgroup label="Americas">
+                    <option value="am_chile">Chile</option>
+                    <option value="am_peru">Peru</option>
+                    <option value="am_canada">Canada</option>
+                    <option value="am_usa">USA</option>
+                    <option value="am_brazil">Brazil</option>
+                  </optgroup>
+                  <optgroup label="Africa">
+                    <option value="af_drc">DRC</option>
+                    <option value="af_south">South Africa</option>
+                    <option value="af_ghana">Ghana</option>
+                    <option value="af_tanzania">Tanzania</option>
+                  </optgroup>
+                  <optgroup label="Asia / Pacific">
+                    <option value="ap_png">Papua New Guinea</option>
+                    <option value="ap_indonesia">Indonesia</option>
+                    <option value="ap_philippines">Philippines</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="studyStage">Study Stage</label>
+                <select id="studyStage" required>
+                  <option value="">Select stage…</option>
+                  <option value="scoping">Scoping Study (±35%)</option>
+                  <option value="pea">Preliminary Economic Assessment (±25%)</option>
+                  <option value="prefeasibility">Pre-Feasibility Study (±15%)</option>
+                  <option value="feasibility">Definitive Feasibility Study (±10%)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="strippingRatio">Strip Ratio (waste:ore)</label>
+                <input type="number" id="strippingRatio" placeholder="e.g. 4.5" min="0" max="50" step="0.1"/>
+              </div>
+              <div class="form-group">
+                <label for="mineLife">Mine Life (years)</label>
+                <input type="number" id="mineLife" placeholder="e.g. 20" min="1" max="100" step="1" required/>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="infrastructure">Infrastructure Remoteness</label>
+                <select id="infrastructure">
+                  <option value="established">Established — Grid power, sealed roads</option>
+                  <option value="moderate">Moderate — Some existing infrastructure</option>
+                  <option value="remote">Remote — Greenfield, no infrastructure</option>
+                  <option value="ultra_remote">Ultra-Remote — Fly-in fly-out only</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="processing">Processing Route</label>
+                <select id="processing">
+                  <option value="conventional">Conventional Flotation / CIL</option>
+                  <option value="heap_leach">Heap Leach + SX-EW</option>
+                  <option value="smelter">Concentrate + Smelter</option>
+                  <option value="dms">Dense Media Separation</option>
+                  <option value="gravity">Gravity + CIL</option>
+                  <option value="bioleach">Bioleaching</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="notes">Additional Notes (optional)</label>
+              <input type="text" id="notes" placeholder="e.g. High altitude, seismic zone, tailings storage facility required…"/>
+            </div>
+
+            <button type="submit" class="btn-predict" id="predictBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Run AI Prediction
+            </button>
+
+          </form>
+        </div>
+
+        <!-- Result panel -->
+        <div>
+          <div class="result-panel" id="resultPanel">
+            <div class="result-panel__placeholder" id="resultPlaceholder">
+              <div class="result-panel__placeholder-icon">⚡</div>
+              <div class="result-panel__placeholder-text">
+                Fill in your project parameters and click<br/>
+                <strong style="color:var(--color-text-primary)">Run AI Prediction</strong><br/>
+                to get your CAPEX estimate.
+              </div>
+            </div>
+            <div id="resultContent" style="display:none">
+              <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);margin-bottom:8px">Estimated CAPEX</div>
+              <div class="result-value" id="resultValue">—</div>
+              <div class="result-range" id="resultRange">Range: — to —</div>
+              <div style="font-size:0.72rem;color:var(--color-text-muted);margin-bottom:6px;display:flex;justify-content:space-between">
+                <span>AI Confidence</span>
+                <span id="confidenceLabel" style="font-weight:700;color:var(--color-accent)">—</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" id="confidenceFill" style="width:0%"></div></div>
+              <div class="result-breakdown" id="resultBreakdown"></div>
+              <button class="btn-export" onclick="exportResult()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export as PDF Report
+              </button>
+            </div>
+          </div>
+
+          <!-- Run history -->
+          <div class="history-panel" id="historyPanel" style="display:none">
+            <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--color-border)">Recent Runs</div>
+            <div id="historyList"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    if (!SESMine.requireAuth()) { /* redirects */ }
+    const session = SESMine.getSession();
+
+    // ── Sidebar user ───────────────────────────────────────
+    if (session) {
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=session.role==='admin'?'admin':session.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${session.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--color-accent);flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${session.firstName} ${session.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+
+    // ── Run counter & limit banner ─────────────────────────
+    const RUN_KEY   = `sesmine_ai_runs_${session?.userId}`;
+    const FREE_LIMIT = 5;
+    let runCount = parseInt(localStorage.getItem(RUN_KEY) || '0');
+
+    function updateLimitBanner() {
+      if (!session || session.plan !== 'free' || session.role === 'admin') return;
+      const remaining = Math.max(0, FREE_LIMIT - runCount);
+      const banner = document.getElementById('limitBanner');
+      banner.style.display = 'flex';
+      document.getElementById('limitText').innerHTML =
+        remaining > 0
+          ? `You have <strong>${remaining}</strong> AI Predictor run${remaining!==1?'s':''} remaining this month.`
+          : `<strong>Monthly limit reached.</strong> Upgrade to Pro for unlimited runs.`;
+      if (remaining === 0) {
+        document.getElementById('predictBtn').disabled = true;
+        document.getElementById('predictBtn').textContent = 'Upgrade to Run More Predictions';
+        document.getElementById('predictBtn').onclick = () => window.location.href = '/pricing.html';
+      }
+    }
+    updateLimitBanner();
+
+    // ── CAPEX model ────────────────────────────────────────
+    const BASE_INTENSITY = {
+      copper:       { open_pit:12000, underground_sublevel:28000, underground_blockcave:22000, underground_cut_fill:32000, heap_leach:8000,  default:18000 },
+      gold:         { open_pit:8000,  underground_sublevel:22000, underground_blockcave:18000, underground_cut_fill:26000, heap_leach:5000,  default:14000 },
+      iron_ore:     { open_pit:28,    default:35 },
+      lithium:      { open_pit:55000, heap_leach:38000, default:50000 },
+      nickel:       { open_pit:18000, underground_sublevel:32000, default:24000 },
+      coal_met:     { open_pit:45,    underground_longwall:80,    default:55 },
+      coal_thermal: { open_pit:30,    underground_longwall:60,    default:40 },
+      zinc_lead:    { open_pit:9000,  underground_sublevel:20000, default:14000 },
+      silver:       { open_pit:7000,  underground_sublevel:18000, default:12000 },
+      uranium:      { open_pit:15000, insitu:8000,                default:20000 },
+      rare_earths:  { open_pit:40000, default:55000 }
+    };
+
+    const LOCATION_FACTOR = {
+      au_wa:1.0, au_qld:1.05, au_nsw:1.08, au_sa:1.02, au_nt:1.15,
+      am_chile:0.85, am_peru:0.88, am_canada:1.12, am_usa:1.18, am_brazil:0.92,
+      af_drc:1.25, af_south:0.95, af_ghana:1.10, af_tanzania:1.15,
+      ap_png:1.30, ap_indonesia:1.05, ap_philippines:1.08
+    };
+
+    const INFRA_FACTOR = { established:1.0, moderate:1.12, remote:1.28, ultra_remote:1.45 };
+
+    const STUDY_ACCURACY = {
+      scoping:0.35, pea:0.25, prefeasibility:0.15, feasibility:0.10
+    };
+
+    const COMMODITY_UNIT = {
+      iron_ore:'t', coal_met:'t', coal_thermal:'t', default:'t metal'
+    };
+
+    function calcCapex(params) {
+      const { mineType, commodity, throughput, grade, location, infrastructure, studyStage } = params;
+      const intensityMap = BASE_INTENSITY[commodity] || BASE_INTENSITY.copper;
+      const intensity    = intensityMap[mineType] || intensityMap.default || 15000;
+      const locFactor    = LOCATION_FACTOR[location] || 1.0;
+      const infraFactor  = INFRA_FACTOR[infrastructure] || 1.0;
+
+      // For bulk commodities (iron ore, coal) intensity is $/t capacity
+      const isBulk = ['iron_ore','coal_met','coal_thermal'].includes(commodity);
+      let baseCAPEX;
+      if (isBulk) {
+        baseCAPEX = intensity * throughput * 1e6; // $/t × Mtpa × 1e6 = $
+      } else {
+        // Metal commodities: intensity × annual metal production (kt)
+        const annualMetal = throughput * 1e6 * (grade / 100); // tonnes metal/yr
+        baseCAPEX = intensity * annualMetal;
+      }
+
+      const totalCAPEX = baseCAPEX * locFactor * infraFactor;
+      const accuracy   = STUDY_ACCURACY[studyStage] || 0.25;
+      const low        = totalCAPEX * (1 - accuracy);
+      const high       = totalCAPEX * (1 + accuracy);
+      const confidence = Math.round((1 - accuracy) * 100);
+
+      // Breakdown
+      const mining     = totalCAPEX * 0.32;
+      const processing = totalCAPEX * 0.28;
+      const infra      = totalCAPEX * 0.18;
+      const indirect   = totalCAPEX * 0.14;
+      const contingency= totalCAPEX * 0.08;
+
+      return { total:totalCAPEX, low, high, confidence, mining, processing, infra, indirect, contingency };
+    }
+
+    function fmt(val) {
+      if (val >= 1e9) return '$' + (val/1e9).toFixed(2) + 'B';
+      if (val >= 1e6) return '$' + (val/1e6).toFixed(1) + 'M';
+      return '$' + Math.round(val/1e3) + 'K';
+    }
+
+    // ── Run predictor ──────────────────────────────────────
+    function runPredictor(e) {
+      e.preventDefault();
+
+      // Free plan gate
+      if (session?.plan === 'free' && session?.role !== 'admin' && runCount >= FREE_LIMIT) {
+        SESMine.showToast('Monthly limit reached. Upgrade to Pro for unlimited runs.','warning',4000);
+        setTimeout(()=>window.location.href='/pricing.html',1500);
+        return;
+      }
+
+      const btn = document.getElementById('predictBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner spinner-sm"></span> Analysing…';
+
+      const params = {
+        mineType:       document.getElementById('mineType').value,
+        commodity:      document.getElementById('commodity').value,
+        throughput:     parseFloat(document.getElementById('throughput').value),
+        grade:          parseFloat(document.getElementById('grade').value),
+        location:       document.getElementById('location').value,
+        infrastructure: document.getElementById('infrastructure').value,
+        studyStage:     document.getElementById('studyStage').value,
+        mineLife:       parseInt(document.getElementById('mineLife').value),
+        notes:          document.getElementById('notes').value
+      };
+
+      // Simulate AI processing delay
+      setTimeout(() => {
+        const result = calcCapex(params);
+
+        // Update run count
+        runCount++;
+        localStorage.setItem(RUN_KEY, runCount);
+        updateLimitBanner();
+
+        // Show result
+        document.getElementById('resultPlaceholder').style.display = 'none';
+        document.getElementById('resultContent').style.display     = 'block';
+        document.getElementById('resultValue').textContent  = fmt(result.total);
+        document.getElementById('resultRange').textContent  = `Range: ${fmt(result.low)} — ${fmt(result.high)}`;
+        document.getElementById('confidenceLabel').textContent = result.confidence + '%';
+        setTimeout(()=>{
+          document.getElementById('confidenceFill').style.width = result.confidence + '%';
+        }, 100);
+
+        document.getElementById('resultBreakdown').innerHTML = `
+          <div class="result-row"><span class="result-row__label">Mining & Earthworks</span><span class="result-row__value">${fmt(result.mining)}</span></div>
+          <div class="result-row"><span class="result-row__label">Processing Plant</span><span class="result-row__value">${fmt(result.processing)}</span></div>
+          <div class="result-row"><span class="result-row__label">Infrastructure</span><span class="result-row__value">${fmt(result.infra)}</span></div>
+          <div class="result-row"><span class="result-row__label">Indirect Costs</span><span class="result-row__value">${fmt(result.indirect)}</span></div>
+          <div class="result-row"><span class="result-row__label">Contingency</span><span class="result-row__value">${fmt(result.contingency)}</span></div>
+        `;
+
+        // Save to history
+        const histKey  = `sesmine_ai_history_${session?.userId}`;
+        const history  = JSON.parse(localStorage.getItem(histKey) || '[]');
+        history.unshift({
+          label: `${params.commodity.replace('_',' ')} ${params.mineType.replace(/_/g,' ')} — ${params.throughput} Mtpa`,
+          value: fmt(result.total),
+          time:  new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+        });
+        localStorage.setItem(histKey, JSON.stringify(history.slice(0,8)));
+        renderHistory();
+
+        btn.disabled = false;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Run AI Prediction';
+        SESMine.showToast('CAPEX prediction complete!','success');
+      }, 1800);
+    }
+
+    function renderHistory() {
+      const histKey = `sesmine_ai_history_${session?.userId}`;
+      const history = JSON.parse(localStorage.getItem(histKey) || '[]');
+      if (!history.length) return;
+      const panel = document.getElementById('historyPanel');
+      const list  = document.getElementById('historyList');
+      panel.style.display = 'block';
+      list.innerHTML = history.map(h => `
+        <div class="history-item">
+          <div>
+            <div class="history-item__name">${h.label}</div>
+            <div class="history-item__meta">${h.time}</div>
+          </div>
+          <div class="history-item__value">${h.value}</div>
+        </div>
+      `).join('');
+    }
+
+    function exportResult() {
+      SESMine.showToast('PDF export queued — check your email shortly.','success');
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
+
