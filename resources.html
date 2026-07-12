@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mining Resources & Guides — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;}
+    .nav{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .nav__logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-size:1rem;font-weight:900;color:var(--color-text-primary);}
+    .nav__logo img{height:26px;}
+    .nav__actions{display:flex;align-items:center;gap:10px;}
+    .btn-sm-ghost{padding:7px 14px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:600;text-decoration:none;transition:all .15s;}
+    .btn-sm-ghost:hover{border-color:var(--color-accent);color:var(--color-accent);}
+    .btn-sm-accent{padding:7px 16px;background:var(--color-accent);border:none;border-radius:var(--radius-md);color:#fff;font-size:0.78rem;font-weight:700;text-decoration:none;}
+    .content{max-width:1100px;margin:0 auto;padding:60px 40px;}
+    .page-header{text-align:center;margin-bottom:48px;}
+    .page-eyebrow{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-accent);margin-bottom:12px;display:block;}
+    .page-title{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;letter-spacing:-0.04em;margin:0 0 14px;}
+    .page-sub{font-size:0.95rem;color:var(--color-text-secondary);max-width:520px;margin:0 auto;}
+
+    /* Filter tabs */
+    .filter-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;}
+    .filter-tab{padding:7px 16px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:999px;font-size:0.78rem;font-weight:600;color:var(--color-text-secondary);cursor:pointer;transition:all .15s;font-family:var(--font-body);}
+    .filter-tab:hover{border-color:var(--color-accent);color:var(--color-accent);}
+    .filter-tab.active{background:var(--color-accent);border-color:var(--color-accent);color:#fff;}
+
+    /* Resource grid */
+    .resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+    .resource-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);overflow:hidden;animation:fadeInUp 0.4s ease both;transition:box-shadow .2s,border-color .2s;cursor:pointer;}
+    .resource-card:hover{box-shadow:var(--shadow-md);border-color:var(--color-accent);}
+    .resource-card__img{width:100%;height:140px;object-fit:cover;}
+    .resource-card__body{padding:18px;}
+    .resource-card__type{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-accent);margin-bottom:6px;}
+    .resource-card__title{font-size:0.9rem;font-weight:700;color:var(--color-text-primary);margin-bottom:8px;line-height:1.4;}
+    .resource-card__desc{font-size:0.75rem;color:var(--color-text-secondary);line-height:1.5;margin-bottom:14px;}
+    .resource-card__footer{display:flex;align-items:center;justify-content:space-between;}
+    .resource-card__meta{font-size:0.68rem;color:var(--color-text-muted);}
+    .resource-card__btn{font-size:0.72rem;font-weight:700;color:var(--color-accent);text-decoration:none;display:flex;align-items:center;gap:4px;}
+    .resource-card__btn:hover{text-decoration:underline;}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/index.html" class="nav__logo">
+      <img src="" alt="SESMine" data-sesmine-logo/>
+      SESMine
+    </a>
+    <div class="nav__actions">
+      <a href="/auth/login.html"    class="btn-sm-ghost">Sign In</a>
+      <a href="/auth/register.html" class="btn-sm-accent">Get Started Free</a>
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="page-header">
+      <span class="page-eyebrow">Resources</span>
+      <h1 class="page-title">Mining Guides, Templates & Research</h1>
+      <p class="page-sub">Free resources for mining professionals — CAPEX benchmarks, technical guides, Excel templates and industry research papers.</p>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterResources('all',this)">All Resources</button>
+      <button class="filter-tab" onclick="filterResources('guide',this)">Guides</button>
+      <button class="filter-tab" onclick="filterResources('template',this)">Templates</button>
+      <button class="filter-tab" onclick="filterResources('research',this)">Research</button>
+      <button class="filter-tab" onclick="filterResources('benchmark',this)">Benchmarks</button>
+    </div>
+
+    <div class="resource-grid" id="resourceGrid"></div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    const RESOURCES = [
+      { type:'benchmark', title:'Global Mining CAPEX Benchmark Report 2026', desc:'Comprehensive CAPEX intensity data for 500+ projects across 11 commodities, 6 mine types and 18 jurisdictions.', img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60&fit=crop', date:'Jul 2026', size:'4.2 MB PDF' },
+      { type:'guide',     title:'Open Pit Mine Design: A Practical Guide', desc:'Step-by-step guide to pit optimisation, slope stability, haul road design and bench geometry for open pit operations.', img:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=60&fit=crop', date:'Jun 2026', size:'8.1 MB PDF' },
+      { type:'template',  title:'Mining CAPEX Estimation Excel Template', desc:'Pre-built Excel workbook with cost codes, area summaries, contingency calculation and ±15% accuracy formatting.', img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=60&fit=crop', date:'Jun 2026', size:'2.8 MB XLSX' },
+      { type:'research',  title:'Battery Electric Vehicles in Underground Mining: 2026 State of Play', desc:'Comprehensive review of BEV adoption, ventilation savings, TCO analysis and leading OEM offerings from Sandvik and Epiroc.', img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60&fit=crop', date:'May 2026', size:'6.4 MB PDF' },
+      { type:'guide',     title:'JORC Code 2012: A Practical Reporting Guide', desc:'Plain-language guide to JORC compliance for Mineral Resource and Ore Reserve estimation and public reporting.', img:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=60&fit=crop', date:'May 2026', size:'3.1 MB PDF' },
+      { type:'template',  title:'Mining Operating Cost (C1/AISC) Calculator Template', desc:'Excel template for C1 cash cost, AISC and all-in cost calculation with full breakdown by cost category.', img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60&fit=crop', date:'Apr 2026', size:'1.4 MB XLSX' },
+      { type:'benchmark', title:'Mining Labour Cost Benchmarks: Australia vs Global 2026', desc:'Comparative labour cost data for 12 mining roles across WA, QLD, Chile, Canada, DRC and South Africa.', img:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=60&fit=crop', date:'Apr 2026', size:'2.9 MB PDF' },
+      { type:'research',  title:'Critical Minerals Supply Chain Risk Report 2026', desc:'Analysis of supply concentration risk, geopolitical exposure and diversification strategies for lithium, cobalt, rare earths and nickel.', img:'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&q=60&fit=crop', date:'Mar 2026', size:'5.7 MB PDF' },
+      { type:'guide',     title:'Tailings Storage Facility Design & ANCOLD Guidelines', desc:'Practical guide to TSF design, stability assessment, ANCOLD compliance and closure planning for modern mining operations.', img:'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=60&fit=crop', date:'Mar 2026', size:'7.2 MB PDF' },
+      { type:'template',  title:'Mining Project Schedule Template (MS Project / Excel)', desc:'Pre-built project schedule template for open pit mine development with 240 tasks, critical path and resource loading.', img:'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=60&fit=crop', date:'Feb 2026', size:'3.6 MB ZIP' },
+      { type:'research',  title:'Autonomous Haulage Systems: ROI Analysis 2026', desc:'Detailed ROI analysis of AHS deployment at 12 operations globally. Productivity, maintenance, safety and cost data.', img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60&fit=crop', date:'Feb 2026', size:'4.8 MB PDF' },
+      { type:'benchmark', title:'Processing Plant CAPEX Benchmarks: Flotation & CIL 2026', desc:'Unit cost benchmarks for flotation, CIL, heap leach and DMS processing plants from 200+ recent projects.', img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&q=60&fit=crop', date:'Jan 2026', size:'3.3 MB PDF' }
+    ];
+
+    let activeFilter = 'all';
+
+    function filterResources(type, btn) {
+      activeFilter = type;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderResources();
+    }
+
+    function renderResources() {
+      const filtered = activeFilter === 'all'
+        ? RESOURCES
+        : RESOURCES.filter(r => r.type === activeFilter);
+      document.getElementById('resourceGrid').innerHTML = filtered.map((r, i) => `
+        <div class="resource-card" style="animation-delay:${i*0.04}s"
+             onclick="SESMine.showToast('Downloading: ${r.title}','success')">
+          <img src="${r.img}" alt="${r.title}" class="resource-card__img"
+               onerror="this.style.display='none'"/>
+          <div class="resource-card__body">
+            <div class="resource-card__type">${r.type}</div>
+            <div class="resource-card__title">${r.title}</div>
+            <div class="resource-card__desc">${r.desc}</div>
+            <div class="resource-card__footer">
+              <span class="resource-card__meta">${r.date} · ${r.size}</span>
+              <span class="resource-card__btn">Download ↓</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    renderResources();
+  </script>
+</body>
+</html>
