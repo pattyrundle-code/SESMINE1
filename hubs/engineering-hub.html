@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Engineering Hub — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(99,102,241,0.1);color:#6366f1;font-weight:700;border-right:2px solid #6366f1;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .hub-main{overflow-y:auto;}
+    .hub-topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .hub-topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .hub-topbar__breadcrumb span{color:#6366f1;font-weight:600;}
+    .hub-content{padding:24px 28px;}
+    .hub-hero-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-xl);margin-bottom:24px;border:1px solid var(--color-border);}
+
+    /* Project cards */
+    .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px;}
+    .project-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;animation:fadeInUp 0.4s ease both;transition:box-shadow .2s,border-color .2s;cursor:pointer;}
+    .project-card:hover{box-shadow:var(--shadow-md);border-color:#6366f1;}
+    .project-card__header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+    .project-card__name{font-size:0.9rem;font-weight:700;color:var(--color-text-primary);}
+    .project-card__type{font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25);}
+    .project-card__meta{font-size:0.72rem;color:var(--color-text-muted);margin-bottom:12px;}
+    .project-card__progress-label{display:flex;justify-content:space-between;font-size:0.72rem;margin-bottom:4px;}
+    .progress-bar{height:5px;background:var(--color-border);border-radius:999px;overflow:hidden;}
+    .progress-bar__fill{height:100%;border-radius:999px;background:#6366f1;transition:width .6s ease;}
+    .project-card__stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+    .project-stat{text-align:center;background:var(--color-bg-deep);border-radius:var(--radius-md);padding:8px;}
+    .project-stat__value{font-size:0.82rem;font-weight:800;color:var(--color-text-primary);}
+    .project-stat__label{font-size:0.62rem;color:var(--color-text-muted);margin-top:2px;}
+
+    /* Standards library */
+    .standards-list{display:flex;flex-direction:column;gap:10px;}
+    .standard-item{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;animation:fadeInUp 0.4s ease both;transition:border-color .15s;cursor:pointer;}
+    .standard-item:hover{border-color:#6366f1;}
+    .standard-item__left{display:flex;align-items:center;gap:12px;}
+    .standard-item__icon{width:36px;height:36px;background:rgba(99,102,241,0.1);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+    .standard-item__name{font-size:0.82rem;font-weight:600;color:var(--color-text-primary);}
+    .standard-item__org{font-size:0.7rem;color:var(--color-text-muted);margin-top:2px;}
+    .standard-item__badge{font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:999px;}
+
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html" class="active">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+      <a href="/products/equipment-database.html">🗄️ Equipment DB</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="hub-main">
+    <div class="hub-topbar">
+      <span class="hub-topbar__breadcrumb">Dashboard → <span>Engineering Hub</span></span>
+      <span style="font-size:0.72rem;color:var(--color-text-muted)" id="hubTime"></span>
+    </div>
+    <div class="hub-content">
+
+      <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1200&q=75&fit=crop"
+           alt="Mining engineering and construction site" class="hub-hero-img"/>
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Engineering Hub</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Project tracking, geotechnical data, technical specifications and engineering standards library.</p>
+
+      <!-- KPI strip -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px">
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.6rem;font-weight:900;color:#6366f1">42</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">Active Projects</div>
+        </div>
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.6rem;font-weight:900;color:#6366f1">2,400+</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">Spec Sheets</div>
+        </div>
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.6rem;font-weight:900;color:#2ecc71">94%</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">On-Schedule Rate</div>
+        </div>
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.6rem;font-weight:900;color:#f5a623">$18.4B</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">Total Project Value</div>
+        </div>
+      </div>
+
+      <!-- Active projects -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Active Projects</span>
+          <button onclick="SESMine.showToast('New project form coming soon.','info')"
+                  style="padding:6px 14px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:var(--radius-md);color:#6366f1;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">
+            + New Project
+          </button>
+        </div>
+        <div class="projects-grid">
+          <div class="project-card" style="animation-delay:0.05s" onclick="SESMine.showToast('Project detail view coming soon.','info')">
+            <div class="project-card__header">
+              <div class="project-card__name">Copper South Australia Expansion</div>
+              <span class="project-card__type">Open Pit + UG</span>
+            </div>
+            <div class="project-card__meta">BHP · Olympic Dam, SA · Lead: J. Wilson</div>
+            <div class="project-card__progress-label">
+              <span style="font-size:0.72rem;color:var(--color-text-secondary)">Construction Progress</span>
+              <span style="font-size:0.72rem;font-weight:700;color:#6366f1">34%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-bar__fill" style="width:34%"></div></div>
+            <div class="project-card__stats">
+              <div class="project-stat"><div class="project-stat__value">$4.9B</div><div class="project-stat__label">CAPEX</div></div>
+              <div class="project-stat"><div class="project-stat__value">2028</div><div class="project-stat__label">Completion</div></div>
+              <div class="project-stat"><div class="project-stat__value">350kt</div><div class="project-stat__label">Cu/yr</div></div>
+            </div>
+          </div>
+
+          <div class="project-card" style="animation-delay:0.1s" onclick="SESMine.showToast('Project detail view coming soon.','info')">
+            <div class="project-card__header">
+              <div class="project-card__name">Wafi-Golpu Block Cave</div>
+              <span class="project-card__type">Block Cave</span>
+            </div>
+            <div class="project-card__meta">Newcrest · Papua New Guinea · Lead: S. Nguyen</div>
+            <div class="project-card__progress-label">
+              <span style="font-size:0.72rem;color:var(--color-text-secondary)">Feasibility Progress</span>
+              <span style="font-size:0.72rem;font-weight:700;color:#6366f1">78%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-bar__fill" style="width:78%"></div></div>
+            <div class="project-card__stats">
+              <div class="project-stat"><div class="project-stat__value">$5.8B</div><div class="project-stat__label">CAPEX</div></div>
+              <div class="project-stat"><div class="project-stat__value">2030</div><div class="project-stat__label">First Ore</div></div>
+              <div class="project-stat"><div class="project-stat__value">72kt</div><div class="project-stat__label">Cu eq/yr</div></div>
+            </div>
+          </div>
+
+          <div class="project-card" style="animation-delay:0.15s" onclick="SESMine.showToast('Project detail view coming soon.','info')">
+            <div class="project-card__header">
+              <div class="project-card__name">Thacker Pass Lithium Phase 1</div>
+              <span class="project-card__type">Open Pit</span>
+            </div>
+            <div class="project-card__meta">Lithium Americas · Nevada, USA · Lead: A. Chen</div>
+            <div class="project-card__progress-label">
+              <span style="font-size:0.72rem;color:var(--color-text-secondary)">Commissioning Progress</span>
+              <span style="font-size:0.72rem;font-weight:700;color:#f5a623">91%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-bar__fill" style="width:91%;background:#f5a623"></div></div>
+            <div class="project-card__stats">
+              <div class="project-stat"><div class="project-stat__value">$2.3B</div><div class="project-stat__label">CAPEX</div></div>
+              <div class="project-stat"><div class="project-stat__value">Q4 2026</div><div class="project-stat__label">First Prod.</div></div>
+              <div class="project-stat"><div class="project-stat__value">40kt</div><div class="project-stat__label">LCE/yr</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Standards library -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Engineering Standards Library</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">2,400+ documents</span>
+        </div>
+        <div class="standards-list">
+          <div class="standard-item" style="animation-delay:0.05s" onclick="SESMine.showToast('Document viewer coming soon.','info')">
+            <div class="standard-item__left">
+              <div class="standard-item__icon">📐</div>
+              <div>
+                <div class="standard-item__name">AS 1170 — Structural Loading Standards</div>
+                <div class="standard-item__org">Standards Australia · 2024 Edition</div>
+              </div>
+            </div>
+            <span class="standard-item__badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Current</span>
+          </div>
+          <div class="standard-item" style="animation-delay:0.1s" onclick="SESMine.showToast('Document viewer coming soon.','info')">
+            <div class="standard-item__left">
+              <div class="standard-item__icon">⛏️</div>
+              <div>
+                <div class="standard-item__name">ANCOLD — Guidelines on Tailings Dams</div>
+                <div class="standard-item__org">ANCOLD · 2023 Edition</div>
+              </div>
+            </div>
+            <span class="standard-item__badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Current</span>
+          </div>
+          <div class="standard-item" style="animation-delay:0.15s" onclick="SESMine.showToast('Document viewer coming soon.','info')">
+            <div class="standard-item__left">
+              <div class="standard-item__icon">🪨</div>
+              <div>
+                <div class="standard-item__name">ISRM — Rock Mass Classification</div>
+                <div class="standard-item__org">International Society for Rock Mechanics · 2022</div>
+              </div>
+            </div>
+            <span class="standard-item__badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Current</span>
+          </div>
+          <div class="standard-item" style="animation-delay:0.2s" onclick="SESMine.showToast('Document viewer coming soon.','info')">
+            <div class="standard-item__left">
+              <div class="standard-item__icon">💨</div>
+              <div>
+                <div class="standard-item__name">AS/NZS 3000 — Wiring Rules (Underground)</div>
+                <div class="standard-item__org">Standards Australia · 2024 Amendment</div>
+              </div>
+            </div>
+            <span class="standard-item__badge" style="background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.25)">Updated</span>
+          </div>
+          <div class="standard-item" style="animation-delay:0.25s" onclick="SESMine.showToast('Document viewer coming soon.','info')">
+            <div class="standard-item__left">
+              <div class="standard-item__icon">🔩</div>
+              <div>
+                <div class="standard-item__name">JORC Code — Mineral Resource Reporting</div>
+                <div class="standard-item__org">JORC Committee · 2012 (2024 Guidance)</div>
+              </div>
+            </div>
+            <span class="standard-item__badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Current</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/hubs/_hub-guard.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    SESMineGuard('engineering-hub');
+    const s = SESMine.getSession();
+    if (s) {
+      const c = { free:'#6b7280', pro:'#6366f1', enterprise:'#f5a623', admin:'#ef4444' };
+      const p = s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML = `
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #6366f1;flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+    setInterval(()=>{ document.getElementById('hubTime').textContent='Updated: '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}); },1000);
+  </script>
+</body>
+</html>
