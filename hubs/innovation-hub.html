@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Innovation Hub — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(168,85,247,0.1);color:#a855f7;font-weight:700;border-right:2px solid #a855f7;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .hub-main{overflow-y:auto;}
+    .hub-topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .hub-topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .hub-topbar__breadcrumb span{color:#a855f7;font-weight:600;}
+    .hub-content{padding:24px 28px;}
+    .hub-hero-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-xl);margin-bottom:24px;border:1px solid var(--color-border);}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+
+    /* Tech radar */
+    .radar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+    .radar-card{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;animation:fadeInUp 0.4s ease both;cursor:pointer;transition:border-color .2s;}
+    .radar-card:hover{border-color:#a855f7;}
+    .radar-card__header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+    .radar-card__name{font-size:0.85rem;font-weight:700;color:var(--color-text-primary);}
+    .radar-card__trl{font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:999px;}
+    .radar-card__desc{font-size:0.75rem;color:var(--color-text-secondary);line-height:1.5;margin-bottom:10px;}
+    .radar-card__meta{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--color-text-muted);}
+    .trl-high{background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25);}
+    .trl-mid{background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.25);}
+    .trl-low{background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25);}
+
+    /* R&D pipeline */
+    .rd-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+    .rd-table th{padding:10px 14px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;background:var(--color-bg-deep);border-bottom:1px solid var(--color-border);text-align:left;color:var(--color-text-muted);}
+    .rd-table td{padding:11px 14px;border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);}
+    .rd-table tr:last-child td{border-bottom:none;}
+    .rd-table tr:hover td{background:var(--color-bg-hover);}
+    .rd-table td:first-child{font-weight:600;color:var(--color-text-primary);}
+    .stage-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.65rem;font-weight:700;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html" class="active">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="hub-main">
+    <div class="hub-topbar">
+      <span class="hub-topbar__breadcrumb">Dashboard → <span>Innovation Hub</span></span>
+      <span style="font-size:0.72rem;color:var(--color-text-muted)">$28M R&D tracked</span>
+    </div>
+    <div class="hub-content">
+
+      <img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200&q=75&fit=crop"
+           alt="Mining technology and autonomous systems" class="hub-hero-img"/>
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Innovation Hub</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Technology radar, automation ROI tracking, R&D pipeline management and curated industry trend intelligence.</p>
+
+      <!-- KPI strip -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px">
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.5rem;font-weight:900;color:#a855f7">$28M</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">R&D Investment</div>
+        </div>
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.5rem;font-weight:900;color:#a855f7">18</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">Active Initiatives</div>
+        </div>
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.5rem;font-weight:900;color:#2ecc71">$142M</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">Projected ROI</div>
+        </div>
+        <div class="panel" style="margin-bottom:0;text-align:center;padding:16px">
+          <div style="font-size:1.5rem;font-weight:900;color:#f5a623">5.1x</div>
+          <div style="font-size:0.7rem;color:var(--color-text-muted);margin-top:4px">R&D Return Multiple</div>
+        </div>
+      </div>
+
+      <!-- Technology radar -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Technology Readiness Radar</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">TRL = Technology Readiness Level (1–9)</span>
+        </div>
+        <div class="radar-grid">
+          <div class="radar-card" style="animation-delay:0.05s" onclick="SESMine.showToast('Technology detail view coming soon.','info')">
+            <div class="radar-card__header">
+              <div class="radar-card__name">Autonomous Haul Trucks (AHS)</div>
+              <span class="radar-card__trl trl-high">TRL 9</span>
+            </div>
+            <p class="radar-card__desc">Fully deployed at scale. Komatsu 930E-5 AHS operating at 50+ sites globally with 94% utilisation rates.</p>
+            <div class="radar-card__meta"><span>Deployed</span><span>ROI: 18–24%</span></div>
+          </div>
+          <div class="radar-card" style="animation-delay:0.1s" onclick="SESMine.showToast('Technology detail view coming soon.','info')">
+            <div class="radar-card__header">
+              <div class="radar-card__name">Battery Electric Vehicles (BEV)</div>
+              <span class="radar-card__trl trl-high">TRL 8</span>
+            </div>
+            <p class="radar-card__desc">Sandvik TH665B and Epiroc MT65 in production. Ventilation savings of 30–50% in UG applications.</p>
+            <div class="radar-card__meta"><span>Early Adoption</span><span>ROI: 12–20%</span></div>
+          </div>
+          <div class="radar-card" style="animation-delay:0.15s" onclick="SESMine.showToast('Technology detail view coming soon.','info')">
+            <div class="radar-card__header">
+              <div class="radar-card__name">AI-Driven Ore Grade Prediction</div>
+              <span class="radar-card__trl trl-mid">TRL 6</span>
+            </div>
+            <p class="radar-card__desc">ML models predicting ore grade from drill data with ±4% accuracy. Reduces assay costs by 35%.</p>
+            <div class="radar-card__meta"><span>Pilot Phase</span><span>ROI: 8–15%</span></div>
+          </div>
+          <div class="radar-card" style="animation-delay:0.2s" onclick="SESMine.showToast('Technology detail view coming soon.','info')">
+            <div class="radar-card__header">
+              <div class="radar-card__name">Autonomous Drilling Systems</div>
+              <span class="radar-card__trl trl-high">TRL 8</span>
+            </div>
+            <p class="radar-card__desc">Epiroc SmartROC and Sandvik iSURE achieving 94% utilisation. Drill pattern accuracy improved 40%.</p>
+            <div class="radar-card__meta"><span>Scaling</span><span>ROI: 14–22%</span></div>
+          </div>
+          <div class="radar-card" style="animation-delay:0.25s" onclick="SESMine.showToast('Technology detail view coming soon.','info')">
+            <div class="radar-card__header">
+              <div class="radar-card__name">Digital Twin — Mine Planning</div>
+              <span class="radar-card__trl trl-mid">TRL 5</span>
+            </div>
+            <p class="radar-card__desc">Real-time 3D mine model synchronised with survey data. Enables scenario planning and blast optimisation.</p>
+            <div class="radar-card__meta"><span>Development</span><span>ROI: TBD</span></div>
+          </div>
+          <div class="radar-card" style="animation-delay:0.3s" onclick="SESMine.showToast('Technology detail view coming soon.','info')">
+            <div class="radar-card__header">
+              <div class="radar-card__name">Green Hydrogen Haulage</div>
+              <span class="radar-card__trl trl-low">TRL 3</span>
+            </div>
+            <p class="radar-card__desc">Hydrogen fuel cell haul trucks in early R&D. Potential to eliminate 60% of Scope 1 diesel emissions.</p>
+            <div class="radar-card__meta"><span>Research</span><span>2030+ horizon</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- R&D pipeline -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">R&D Investment Pipeline — FY2026</span>
+          <span style="font-size:0.72rem;color:#a855f7;font-weight:700">$28M total</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="rd-table" aria-label="R&D pipeline">
+            <thead>
+              <tr>
+                <th>Initiative</th>
+                <th>Category</th>
+                <th>Investment</th>
+                <th>Stage</th>
+                <th>Expected ROI</th>
+                <th>Timeline</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>AHS Fleet Expansion — Gudai-Darri</td>
+                <td>Automation</td>
+                <td>$8.4M</td>
+                <td><span class="stage-badge" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Deployment</span></td>
+                <td>22% p.a.</td>
+                <td>Q3 2026</td>
+              </tr>
+              <tr>
+                <td>BEV Underground Trial — Telfer</td>
+                <td>Electrification</td>
+                <td>$6.2M</td>
+                <td><span class="stage-badge" style="background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.25)">Pilot</span></td>
+                <td>15% p.a.</td>
+                <td>Q1 2027</td>
+              </tr>
+              <tr>
+                <td>AI Grade Control System</td>
+                <td>AI / ML</td>
+                <td>$4.8M</td>
+                <td><span class="stage-badge" style="background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25)">Development</span></td>
+                <td>12% p.a.</td>
+                <td>Q2 2027</td>
+              </tr>
+              <tr>
+                <td>Digital Twin — Copper South</td>
+                <td>Digital</td>
+                <td>$3.6M</td>
+                <td><span class="stage-badge" style="background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25)">Development</span></td>
+                <td>TBD</td>
+                <td>Q4 2027</td>
+              </tr>
+              <tr>
+                <td>Green Hydrogen Feasibility Study</td>
+                <td>Decarbonisation</td>
+                <td>$2.1M</td>
+                <td><span class="stage-badge" style="background:rgba(168,85,247,0.12);color:#a855f7;border:1px solid rgba(168,85,247,0.25)">Research</span></td>
+                <td>Long-term</td>
+                <td>2030+</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/hubs/_hub-guard.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    SESMineGuard('innovation-hub');
+    const s=SESMine.getSession();
+    if(s){
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #a855f7;flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
