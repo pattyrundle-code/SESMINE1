@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .auth-wrap{width:100%;max-width:420px;animation:fadeInUp 0.5s ease both;}
+    .auth-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px;text-decoration:none;}
+    .auth-logo img{height:32px;object-fit:contain;}
+    .auth-logo__text{font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;color:var(--color-text-primary);}
+    .auth-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);padding:36px;box-shadow:var(--shadow-lg);}
+    .auth-card__title{font-size:1.2rem;font-weight:800;letter-spacing:-0.03em;margin:0 0 6px;text-align:center;}
+    .auth-card__sub{font-size:0.82rem;color:var(--color-text-secondary);text-align:center;margin:0 0 28px;}
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;font-size:0.75rem;font-weight:600;color:var(--color-text-secondary);margin-bottom:5px;}
+    .form-group input{width:100%;padding:11px 14px;background:var(--color-bg-input);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);font-size:0.875rem;font-family:var(--font-body);transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
+    .form-group input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(245,166,35,0.15);}
+    .form-group input.error{border-color:var(--color-error);}
+    .form-group input::placeholder{color:var(--color-text-muted);}
+    .password-wrap{position:relative;}
+    .password-wrap input{padding-right:44px;}
+    .password-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--color-text-muted);cursor:pointer;font-size:1rem;padding:4px;transition:color .15s;}
+    .password-toggle:hover{color:var(--color-text-primary);}
+    .remember-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+    .remember-label{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--color-text-secondary);cursor:pointer;}
+    .forgot-link{font-size:0.75rem;color:var(--color-accent);text-decoration:none;font-weight:600;}
+    .forgot-link:hover{text-decoration:underline;}
+    .btn-login{width:100%;padding:13px;background:var(--color-accent);color:#fff;border:none;border-radius:var(--radius-md);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:var(--font-body);transition:background .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;}
+    .btn-login:hover{background:var(--color-accent-dark);box-shadow:0 4px 20px rgba(245,166,35,0.35);}
+    .btn-login:disabled{opacity:0.6;cursor:not-allowed;}
+    .auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:0.72rem;color:var(--color-text-muted);}
+    .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--color-border);}
+    .demo-accounts{display:flex;flex-direction:column;gap:8px;}
+    .demo-btn{padding:9px 14px;background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;display:flex;align-items:center;justify-content:space-between;}
+    .demo-btn:hover{border-color:var(--color-accent);color:var(--color-text-primary);}
+    .demo-btn__badge{font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;}
+    .error-banner{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius-md);padding:10px 14px;font-size:0.78rem;color:#ef4444;margin-bottom:16px;display:none;animation:fadeInDown 0.3s ease both;}
+    .auth-footer{text-align:center;margin-top:20px;font-size:0.78rem;color:var(--color-text-muted);}
+    .auth-footer a{color:var(--color-accent);text-decoration:none;font-weight:600;}
+    .auth-footer a:hover{text-decoration:underline;}
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <a href="/index.html" class="auth-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           alt="SESMine" data-sesmine-logo/>
+      <span class="auth-logo__text">SESMine</span>
+    </a>
+
+    <div class="auth-card">
+      <h1 class="auth-card__title">Welcome back</h1>
+      <p class="auth-card__sub">Sign in to your mining intelligence platform</p>
+
+      <div class="error-banner" id="errorBanner" role="alert"></div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" placeholder="you@company.com" autocomplete="email" required/>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required/>
+            <button type="button" class="password-toggle" id="pwToggle" aria-label="Toggle password visibility">👁</button>
+          </div>
+        </div>
+        <div class="remember-row">
+          <label class="remember-label">
+            <input type="checkbox" id="rememberMe"/> Keep me signed in
+          </label>
+          <a href="#" class="forgot-link" onclick="SESMine.showToast('Password reset — coming soon.','info');return false">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-login" id="loginBtn">
+          Sign In
+        </button>
+      </form>
+
+      <div class="auth-divider">or try a demo account</div>
+
+      <div class="demo-accounts">
+        <button class="demo-btn" onclick="fillDemo('admin@sesmine.com','Admin123!')">
+          <span>👑 Admin Account — full access</span>
+          <span class="demo-btn__badge" style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">ADMIN</span>
+        </button>
+        <button class="demo-btn" onclick="fillDemo('pro@sesmine.com','Pro123!')">
+          <span>⚡ Pro Account — all 6 hubs</span>
+          <span class="demo-btn__badge" style="background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25)">PRO</span>
+        </button>
+        <button class="demo-btn" onclick="fillDemo('free@sesmine.com','Free123!')">
+          <span>🆓 Free Account — Economics Hub only</span>
+          <span class="demo-btn__badge" style="background:rgba(107,114,128,0.12);color:#6b7280;border:1px solid rgba(107,114,128,0.25)">FREE</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/auth/register.html">Create one free →</a>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (SESMine.isLoggedIn()) {
+      const params   = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect') || '/dashboard/main-dashboard.html';
+      window.location.href = redirect;
+    }
+
+    // Password toggle
+    document.getElementById('pwToggle').addEventListener('click', function () {
+      const input = document.getElementById('password');
+      const isText = input.type === 'text';
+      input.type   = isText ? 'password' : 'text';
+      this.textContent = isText ? '👁' : '🙈';
+    });
+
+    function showError(msg) {
+      const banner = document.getElementById('errorBanner');
+      banner.textContent = msg;
+      banner.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('errorBanner').style.display = 'none';
+    }
+
+    function fillDemo(email, password) {
+      document.getElementById('email').value    = email;
+      document.getElementById('password').value = password;
+      hideError();
+      SESMine.showToast('Demo credentials filled — click Sign In.', 'info');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      hideError();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const remember = document.getElementById('rememberMe').checked;
+      const btn      = document.getElementById('loginBtn');
+
+      if (!email || !password) {
+        showError('Please enter your email and password.');
+        return;
+      }
+
+      btn.disabled     = true;
+      btn.innerHTML    = '<span class="spinner spinner-sm"></span> Signing in…';
+
+      setTimeout(() => {
+        const result = SESMine.login(email, password, remember);
+        if (result.success) {
+          SESMine.showToast(`Welcome back, ${result.session.firstName}! 👋`, 'success');
+          const params   = new URLSearchParams(window.location.search);
+          const redirect = params.get('redirect') || '/dashboard/main-dashboard.html';
+          setTimeout(() => window.location.href = redirect, 600);
+        } else {
+          showError(result.error);
+          document.getElementById('email').classList.add('error');
+          document.getElementById('password').classList.add('error');
+          btn.disabled  = false;
+          btn.innerHTML = 'Sign In';
+        }
+      }, 800);
+    }
+
+    // Clear error on input
+    ['email','password'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function () {
+        this.classList.remove('error');
+        hideError();
+      });
+    });
+  </script>
+</body>
+</html>
