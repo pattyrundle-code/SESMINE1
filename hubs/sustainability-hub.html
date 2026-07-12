@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sustainability Hub — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(46,204,113,0.1);color:#2ecc71;font-weight:700;border-right:2px solid #2ecc71;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .hub-main{overflow-y:auto;}
+    .hub-topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .hub-topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .hub-topbar__breadcrumb span{color:#2ecc71;font-weight:600;}
+    .hub-content{padding:24px 28px;}
+    .hub-hero-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-xl);margin-bottom:24px;border:1px solid var(--color-border);}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+
+    /* ESG KPIs */
+    .esg-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    @media(max-width:1000px){.esg-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+    .esg-kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;animation:fadeInUp 0.4s ease both;}
+    .esg-kpi__icon{font-size:1.4rem;margin-bottom:8px;}
+    .esg-kpi__value{font-size:1.5rem;font-weight:900;letter-spacing:-0.03em;color:#2ecc71;margin-bottom:4px;}
+    .esg-kpi__label{font-size:0.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;}
+    .esg-kpi__trend{font-size:0.72rem;font-weight:600;color:#2ecc71;margin-top:4px;}
+
+    /* Scope emissions */
+    .scope-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:0;}
+    .scope-card{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;animation:fadeInUp 0.4s ease both;}
+    .scope-card__label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:8px;}
+    .scope-card__value{font-size:1.3rem;font-weight:900;color:var(--color-text-primary);margin-bottom:4px;}
+    .scope-card__unit{font-size:0.68rem;color:var(--color-text-muted);}
+    .scope-card__bar{height:5px;background:var(--color-border);border-radius:999px;overflow:hidden;margin-top:10px;}
+    .scope-card__fill{height:100%;border-radius:999px;}
+
+    /* Rehab map placeholder */
+    .rehab-map{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;position:relative;height:220px;margin-bottom:0;}
+    .rehab-map__img{width:100%;height:100%;object-fit:cover;opacity:0.4;}
+    .rehab-map__overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
+
+    /* ESG report status */
+    .report-list{display:flex;flex-direction:column;gap:10px;}
+    .report-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);animation:fadeInUp 0.4s ease both;cursor:pointer;transition:border-color .15s;}
+    .report-item:hover{border-color:#2ecc71;}
+    .report-item__name{font-size:0.82rem;font-weight:600;color:var(--color-text-primary);}
+    .report-item__meta{font-size:0.7rem;color:var(--color-text-muted);margin-top:2px;}
+    .report-status{font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:999px;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html" class="active">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="hub-main">
+    <div class="hub-topbar">
+      <span class="hub-topbar__breadcrumb">Dashboard → <span>Sustainability Hub</span></span>
+      <button onclick="SESMine.showToast('ESG report generated.','success')"
+              style="padding:6px 14px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.25);border-radius:var(--radius-md);color:#2ecc71;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">
+        Generate ESG Report
+      </button>
+    </div>
+    <div class="hub-content">
+
+      <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1200&q=75&fit=crop"
+           alt="Renewable energy and sustainability in mining" class="hub-hero-img"/>
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Sustainability Hub</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Carbon emissions tracking, water management, rehabilitation progress and GRI/TCFD/ISSB-aligned ESG reporting.</p>
+
+      <!-- ESG KPIs -->
+      <div class="esg-kpi-grid">
+        <div class="esg-kpi" style="animation-delay:0.05s">
+          <div class="esg-kpi__icon">🌡️</div>
+          <div class="esg-kpi__value">−8.2%</div>
+          <div class="esg-kpi__label">Scope 1+2 Emissions YoY</div>
+          <div class="esg-kpi__trend">↓ 42,800 tCO₂e vs 2025</div>
+        </div>
+        <div class="esg-kpi" style="animation-delay:0.1s">
+          <div class="esg-kpi__icon">💧</div>
+          <div class="esg-kpi__value">−12.4%</div>
+          <div class="esg-kpi__label">Fresh Water Intensity YoY</div>
+          <div class="esg-kpi__trend">↓ 0.18 kL/t ore milled</div>
+        </div>
+        <div class="esg-kpi" style="animation-delay:0.15s">
+          <div class="esg-kpi__icon">🌱</div>
+          <div class="esg-kpi__value">68%</div>
+          <div class="esg-kpi__label">Rehabilitation Progress</div>
+          <div class="esg-kpi__trend">↑ 340 ha rehabilitated</div>
+        </div>
+        <div class="esg-kpi" style="animation-delay:0.2s">
+          <div class="esg-kpi__icon">♻️</div>
+          <div class="esg-kpi__value">84%</div>
+          <div class="esg-kpi__label">Waste Recycling Rate</div>
+          <div class="esg-kpi__trend">↑ 6% vs 2025 target</div>
+        </div>
+      </div>
+
+      <!-- Scope emissions -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">GHG Emissions by Scope — FY2026</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">Total: 478,200 tCO₂e</span>
+        </div>
+        <div class="scope-grid">
+          <div class="scope-card" style="animation-delay:0.05s">
+            <div class="scope-card__label">Scope 1 — Direct</div>
+            <div class="scope-card__value">284,100</div>
+            <div class="scope-card__unit">tCO₂e · Diesel, explosives, gas</div>
+            <div class="scope-card__bar"><div class="scope-card__fill" style="width:59%;background:#ef4444"></div></div>
+          </div>
+          <div class="scope-card" style="animation-delay:0.1s">
+            <div class="scope-card__label">Scope 2 — Electricity</div>
+            <div class="scope-card__value">112,400</div>
+            <div class="scope-card__unit">tCO₂e · Grid electricity purchased</div>
+            <div class="scope-card__bar"><div class="scope-card__fill" style="width:24%;background:#f5a623"></div></div>
+          </div>
+          <div class="scope-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sustainability Hub — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(46,204,113,0.1);color:#2ecc71;font-weight:700;border-right:2px solid #2ecc71;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .hub-main{overflow-y:auto;}
+    .hub-topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .hub-topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .hub-topbar__breadcrumb span{color:#2ecc71;font-weight:600;}
+    .hub-content{padding:24px 28px;}
+    .hub-hero-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-xl);margin-bottom:24px;border:1px solid var(--color-border);}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+
+    /* ESG KPIs */
+    .esg-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    @media(max-width:1000px){.esg-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+    .esg-kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;animation:fadeInUp 0.4s ease both;}
+    .esg-kpi__icon{font-size:1.4rem;margin-bottom:8px;}
+    .esg-kpi__value{font-size:1.5rem;font-weight:900;letter-spacing:-0.03em;color:#2ecc71;margin-bottom:4px;}
+    .esg-kpi__label{font-size:0.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;}
+    .esg-kpi__trend{font-size:0.72rem;font-weight:600;color:#2ecc71;margin-top:4px;}
+
+    /* Scope emissions */
+    .scope-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:0;}
+    .scope-card{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;animation:fadeInUp 0.4s ease both;}
+    .scope-card__label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-muted);margin-bottom:8px;}
+    .scope-card__value{font-size:1.3rem;font-weight:900;color:var(--color-text-primary);margin-bottom:4px;}
+    .scope-card__unit{font-size:0.68rem;color:var(--color-text-muted);}
+    .scope-card__bar{height:5px;background:var(--color-border);border-radius:999px;overflow:hidden;margin-top:10px;}
+    .scope-card__fill{height:100%;border-radius:999px;}
+
+    /* Rehab map placeholder */
+    .rehab-map{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;position:relative;height:220px;margin-bottom:0;}
+    .rehab-map__img{width:100%;height:100%;object-fit:cover;opacity:0.4;}
+    .rehab-map__overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
+
+    /* ESG report status */
+    .report-list{display:flex;flex-direction:column;gap:10px;}
+    .report-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);animation:fadeInUp 0.4s ease both;cursor:pointer;transition:border-color .15s;}
+    .report-item:hover{border-color:#2ecc71;}
+    .report-item__name{font-size:0.82rem;font-weight:600;color:var(--color-text-primary);}
+    .report-item__meta{font-size:0.7rem;color:var(--color-text-muted);margin-top:2px;}
+    .report-status{font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:999px;}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html" class="active">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="hub-main">
+    <div class="hub-topbar">
+      <span class="hub-topbar__breadcrumb">Dashboard → <span>Sustainability Hub</span></span>
+      <button onclick="SESMine.showToast('ESG report generated.','success')"
+              style="padding:6px 14px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.25);border-radius:var(--radius-md);color:#2ecc71;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">
+        Generate ESG Report
+      </button>
+    </div>
+    <div class="hub-content">
+
+      <img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=1200&q=75&fit=crop"
+           alt="Renewable energy and sustainability in mining" class="hub-hero-img"/>
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Sustainability Hub</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">Carbon emissions tracking, water management, rehabilitation progress and GRI/TCFD/ISSB-aligned ESG reporting.</p>
+
+      <!-- ESG KPIs -->
+      <div class="esg-kpi-grid">
+        <div class="esg-kpi" style="animation-delay:0.05s">
+          <div class="esg-kpi__icon">🌡️</div>
+          <div class="esg-kpi__value">−8.2%</div>
+          <div class="esg-kpi__label">Scope 1+2 Emissions YoY</div>
+          <div class="esg-kpi__trend">↓ 42,800 tCO₂e vs 2025</div>
+        </div>
+        <div class="esg-kpi" style="animation-delay:0.1s">
+          <div class="esg-kpi__icon">💧</div>
+          <div class="esg-kpi__value">−12.4%</div>
+          <div class="esg-kpi__label">Fresh Water Intensity YoY</div>
+          <div class="esg-kpi__trend">↓ 0.18 kL/t ore milled</div>
+        </div>
+        <div class="esg-kpi" style="animation-delay:0.15s">
+          <div class="esg-kpi__icon">🌱</div>
+          <div class="esg-kpi__value">68%</div>
+          <div class="esg-kpi__label">Rehabilitation Progress</div>
+          <div class="esg-kpi__trend">↑ 340 ha rehabilitated</div>
+        </div>
+        <div class="esg-kpi" style="animation-delay:0.2s">
+          <div class="esg-kpi__icon">♻️</div>
+          <div class="esg-kpi__value">84%</div>
+          <div class="esg-kpi__label">Waste Recycling Rate</div>
+          <div class="esg-kpi__trend">↑ 6% vs 2025 target</div>
+        </div>
+      </div>
+
+      <!-- Scope emissions -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">GHG Emissions by Scope — FY2026</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">Total: 478,200 tCO₂e</span>
+        </div>
+        <div class="scope-grid">
+          <div class="scope-card" style="animation-delay:0.05s">
+            <div class="scope-card__label">Scope 1 — Direct</div>
+            <div class="scope-card__value">284,100</div>
+            <div class="scope-card__unit">tCO₂e · Diesel, explosives, gas</div>
+            <div class="scope-card__bar"><div class="scope-card__fill" style="width:59%;background:#ef4444"></div></div>
+          </div>
+          <div class="scope-card" style="animation-delay:0.1s">
+            <div class="scope-card__label">Scope 2 — Electricity</div>
+            <div class="scope-card__value">112,400</div>
+            <div class="scope-card__unit">tCO₂e · Grid electricity purchased</div>
+            <div class="scope-card__bar"><div class="scope-card__fill" style="width:24%;background:#f5a623"></div></div>
+          </div>
+          <div class="scope-card" style="animation-delay:0.15s">
+            <div class="scope-card__label">Scope 3 — Value Chain</div>
+            <div class="scope-card__value">81,700</div>
+            <div class="scope-card__unit">tCO₂e · Transport, processing</div>
+            <div class="scope-card__bar"><div class="scope-card__fill" style="width:17%;background:#6366f1"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rehabilitation map -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Land Rehabilitation Progress</span>
+          <span style="font-size:0.72rem;color:#2ecc71;font-weight:700">340 ha of 500 ha target</span>
+        </div>
+        <div class="rehab-map">
+          <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=60&fit=crop"
+               alt="Aerial view of rehabilitated land" class="rehab-map__img"/>
+          <div class="rehab-map__overlay">
+            <div style="font-size:2.5rem;font-weight:900;color:#2ecc71">68%</div>
+            <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">340 ha rehabilitated of 500 ha total disturbance</div>
+            <div style="height:8px;width:240px;background:rgba(255,255,255,0.15);border-radius:999px;overflow:hidden;margin-top:8px">
+              <div style="height:100%;width:68%;background:#2ecc71;border-radius:999px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESG report status -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">ESG Disclosure Status — FY2026</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">3 of 4 frameworks complete</span>
+        </div>
+        <div class="report-list">
+          <div class="report-item" style="animation-delay:0.05s" onclick="SESMine.showToast('GRI report viewer coming soon.','info')">
+            <div>
+              <div class="report-item__name">GRI Standards Report 2026</div>
+              <div class="report-item__meta">Global Reporting Initiative · 142 disclosures</div>
+            </div>
+            <span class="report-status" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Complete ✓</span>
+          </div>
+          <div class="report-item" style="animation-delay:0.1s" onclick="SESMine.showToast('TCFD report viewer coming soon.','info')">
+            <div>
+              <div class="report-item__name">TCFD Climate Disclosure 2026</div>
+              <div class="report-item__meta">Task Force on Climate-related Financial Disclosures · 4 pillars</div>
+            </div>
+            <span class="report-status" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Complete ✓</span>
+          </div>
+          <div class="report-item" style="animation-delay:0.15s" onclick="SESMine.showToast('ISSB report viewer coming soon.','info')">
+            <div>
+              <div class="report-item__name">ISSB IFRS S1 & S2 Disclosure 2026</div>
+              <div class="report-item__meta">International Sustainability Standards Board · Mandatory ASX 200</div>
+            </div>
+            <span class="report-status" style="background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.25)">In Progress</span>
+          </div>
+          <div class="report-item" style="animation-delay:0.2s" onclick="SESMine.showToast('CDP report viewer coming soon.','info')">
+            <div>
+              <div class="report-item__name">CDP Climate Change Questionnaire 2026</div>
+              <div class="report-item__meta">Carbon Disclosure Project · Score: A- (2025)</div>
+            </div>
+            <span class="report-status" style="background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)">Complete ✓</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/hubs/_hub-guard.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    SESMineGuard('sustainability-hub');
+    const s = SESMine.getSession();
+    if (s) {
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #2ecc71;flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
+
