@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Safety Hub — SESMine</title>
+  <link rel="icon" href="/assets/img/favicon.ico"/>
+  <link rel="stylesheet" href="/assets/css/main.css"/>
+  <link rel="stylesheet" href="/assets/css/animations.css"/>
+  <style>
+    body{background:var(--color-bg-deep);font-family:var(--font-body);color:var(--color-text-primary);margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    .sidebar{background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+    .sidebar-logo{padding:20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;text-decoration:none;}
+    .sidebar-logo__img{height:28px;object-fit:contain;}
+    .sidebar-user{padding:14px 20px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:10px;}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .sidebar-nav__section{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-muted);padding:8px 20px 4px;}
+    .sidebar-nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:0.82rem;font-weight:500;color:var(--color-text-secondary);text-decoration:none;transition:background .15s,color .15s;}
+    .sidebar-nav a:hover{background:var(--color-bg-hover);color:var(--color-text-primary);}
+    .sidebar-nav a.active{background:rgba(239,68,68,0.1);color:#ef4444;font-weight:700;border-right:2px solid #ef4444;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid var(--color-border);}
+    .btn-signout{width:100%;padding:8px;background:none;border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-secondary);font-size:0.78rem;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+    .btn-signout:hover{border-color:#ef4444;color:#ef4444;}
+    @media(max-width:900px){.sidebar{display:none;}}
+    .hub-main{overflow-y:auto;}
+    .hub-topbar{padding:14px 28px;border-bottom:1px solid var(--color-border);background:var(--color-surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .hub-topbar__breadcrumb{font-size:0.78rem;color:var(--color-text-muted);}
+    .hub-topbar__breadcrumb span{color:#ef4444;font-weight:600;}
+    .hub-content{padding:24px 28px;}
+    .hub-hero-img{width:100%;height:180px;object-fit:cover;border-radius:var(--radius-xl);margin-bottom:24px;border:1px solid var(--color-border);}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;animation:fadeInUp 0.4s ease both;}
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--color-border);}
+    .panel__title{font-size:0.875rem;font-weight:700;}
+
+    /* Safety KPIs */
+    .safety-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+    @media(max-width:1000px){.safety-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+    .safety-kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;animation:fadeInUp 0.4s ease both;text-align:center;}
+    .safety-kpi__value{font-size:2rem;font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:4px;}
+    .safety-kpi__label{font-size:0.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;}
+    .safety-kpi__trend{font-size:0.72rem;font-weight:600;margin-top:6px;}
+    .trend-good{color:#2ecc71;} .trend-bad{color:#ef4444;} .trend-neutral{color:var(--color-text-muted);}
+
+    /* LTI counter */
+    .lti-banner{background:linear-gradient(135deg,rgba(46,204,113,0.1),var(--color-surface));border:1px solid rgba(46,204,113,0.3);border-radius:var(--radius-xl);padding:28px;margin-bottom:24px;text-align:center;animation:fadeInUp 0.4s ease both;}
+    .lti-banner__days{font-size:4rem;font-weight:900;color:#2ecc71;letter-spacing:-0.05em;line-height:1;}
+    .lti-banner__label{font-size:0.875rem;color:var(--color-text-secondary);margin-top:6px;}
+
+    /* Incident table */
+    .incident-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+    .incident-table th{padding:10px 14px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;background:var(--color-bg-deep);border-bottom:1px solid var(--color-border);text-align:left;color:var(--color-text-muted);}
+    .incident-table td{padding:11px 14px;border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);}
+    .incident-table tr:last-child td{border-bottom:none;}
+    .incident-table tr:hover td{background:var(--color-bg-hover);}
+    .incident-table td:first-child{font-weight:600;color:var(--color-text-primary);}
+    .sev-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:0.65rem;font-weight:700;}
+    .sev-low{background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25);}
+    .sev-med{background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.25);}
+    .sev-high{background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25);}
+
+    /* Training compliance */
+    .training-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+    .training-card{background:var(--color-bg-deep);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;animation:fadeInUp 0.4s ease both;}
+    .training-card__name{font-size:0.82rem;font-weight:600;color:var(--color-text-primary);margin-bottom:8px;}
+    .training-card__bar{height:6px;background:var(--color-border);border-radius:999px;overflow:hidden;margin-bottom:6px;}
+    .training-card__fill{height:100%;border-radius:999px;transition:width .6s ease;}
+    .training-card__meta{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--color-text-muted);}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="/dashboard/main-dashboard.html" class="sidebar-logo">
+      <img src="https://cdn.grapesjs.com/workspaces/cmjdh0oo603xm12grpuiruk7p/assets/f6b95b3d-49d1-4e77-b952-49ed80c4befa__image-9-14-1404-ap-at-8.42-pm.png"
+           class="sidebar-logo__img" alt="SESMine" data-sesmine-logo/>
+    </a>
+    <div class="sidebar-user" id="sidebarUser"></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav__section">Navigation</div>
+      <a href="/dashboard/main-dashboard.html">🏠 Dashboard</a>
+      <div class="sidebar-nav__section">Hubs</div>
+      <a href="/hubs/economics-hub.html">💰 Economics</a>
+      <a href="/hubs/engineering-hub.html">⚙️ Engineering</a>
+      <a href="/hubs/procurement-hub.html">📦 Procurement</a>
+      <a href="/hubs/safety-hub.html" class="active">🛡️ Safety</a>
+      <a href="/hubs/sustainability-hub.html">🌍 Sustainability</a>
+      <a href="/hubs/innovation-hub.html">💡 Innovation</a>
+      <div class="sidebar-nav__section">Tools</div>
+      <a href="/products/ai-predictor.html">⚡ AI Predictor</a>
+      <a href="/products/cost-calculator.html">🧮 Cost Calculator</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="SESMine.logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <div class="hub-main">
+    <div class="hub-topbar">
+      <span class="hub-topbar__breadcrumb">Dashboard → <span>Safety Hub</span></span>
+      <button onclick="SESMine.showToast('Safety report exported.','success')"
+              style="padding:6px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:var(--radius-md);color:#ef4444;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">
+        Export Report
+      </button>
+    </div>
+    <div class="hub-content">
+
+      <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=75&fit=crop"
+           alt="Mining safety and hard hat workers" class="hub-hero-img"/>
+
+      <h1 style="font-size:1.3rem;font-weight:900;letter-spacing:-0.03em;margin:0 0 4px">Safety Hub</h1>
+      <p style="font-size:0.82rem;color:var(--color-text-secondary);margin:0 0 24px">TRIFR tracking, incident management, regulatory compliance and training records.</p>
+
+      <!-- LTI counter -->
+      <div class="lti-banner">
+        <div class="lti-banner__days" id="ltiDays">142</div>
+        <div class="lti-banner__label">Days since last Lost Time Injury (LTI) — Site-wide record 🏆</div>
+      </div>
+
+      <!-- Safety KPIs -->
+      <div class="safety-kpi-grid">
+        <div class="safety-kpi" style="animation-delay:0.05s">
+          <div class="safety-kpi__value" style="color:#2ecc71">2.14</div>
+          <div class="safety-kpi__label">TRIFR</div>
+          <div class="safety-kpi__trend trend-good">↓ 0.31 vs last month</div>
+        </div>
+        <div class="safety-kpi" style="animation-delay:0.1s">
+          <div class="safety-kpi__value" style="color:#2ecc71">0.00</div>
+          <div class="safety-kpi__label">LTIFR</div>
+          <div class="safety-kpi__trend trend-good">142 days LTI-free</div>
+        </div>
+        <div class="safety-kpi" style="animation-delay:0.15s">
+          <div class="safety-kpi__value" style="color:#f5a623">3</div>
+          <div class="safety-kpi__label">Open Incidents</div>
+          <div class="safety-kpi__trend trend-neutral">2 near-miss, 1 first aid</div>
+        </div>
+        <div class="safety-kpi" style="animation-delay:0.2s">
+          <div class="safety-kpi__value" style="color:#6366f1">97%</div>
+          <div class="safety-kpi__label">Training Compliance</div>
+          <div class="safety-kpi__trend trend-good">↑ 2% vs last quarter</div>
+        </div>
+      </div>
+
+      <!-- Incident register -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Incident Register — Last 30 Days</span>
+          <button onclick="SESMine.showToast('New incident form coming soon.','info')"
+                  style="padding:6px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:var(--radius-md);color:#ef4444;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font-body)">
+            + Log Incident
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="incident-table" aria-label="Incident register">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>#INC-2026-084</td>
+                <td>10 Jul 2026</td>
+                <td>Near Miss</td>
+                <td>Pit 3 — Haul Road</td>
+                <td><span class="sev-badge sev-med">Medium</span></td>
+                <td><span class="sev-badge sev-med">Under Review</span></td>
+                <td>R. Patel</td>
+              </tr>
+              <tr>
+                <td>#INC-2026-083</td>
+                <td>8 Jul 2026</td>
+                <td>Near Miss</td>
+                <td>Processing Plant — Crusher</td>
+                <td><span class="sev-badge sev-low">Low</span></td>
+                <td><span class="sev-badge sev-low">Closed</span></td>
+                <td>S. Nguyen</td>
+              </tr>
+              <tr>
+                <td>#INC-2026-082</td>
+                <td>5 Jul 2026</td>
+                <td>First Aid</td>
+                <td>Maintenance Workshop</td>
+                <td><span class="sev-badge sev-low">Low</span></td>
+                <td><span class="sev-badge" style="background:rgba(99,102,241,0.12);color:#6366f1;border:1px solid rgba(99,102,241,0.25)">Open</span></td>
+                <td>J. Wilson</td>
+              </tr>
+              <tr>
+                <td>#INC-2026-081</td>
+                <td>1 Jul 2026</td>
+                <td>Property Damage</td>
+                <td>ROM Pad</td>
+                <td><span class="sev-badge sev-low">Low</span></td>
+                <td><span class="sev-badge sev-low">Closed</span></td>
+                <td>A. Chen</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Training compliance -->
+      <div class="panel">
+        <div class="panel__header">
+          <span class="panel__title">Training Compliance by Module</span>
+          <span style="font-size:0.72rem;color:var(--color-text-muted)">Overall: 97%</span>
+        </div>
+        <div class="training-grid">
+          <div class="training-card" style="animation-delay:0.05s">
+            <div class="training-card__name">Site Induction & Emergency Response</div>
+            <div class="training-card__bar"><div class="training-card__fill" style="width:100%;background:#2ecc71"></div></div>
+            <div class="training-card__meta"><span>100% complete</span><span>248 / 248</span></div>
+          </div>
+          <div class="training-card" style="animation-delay:0.1s">
+            <div class="training-card__name">Explosives Handling & Blasting</div>
+            <div class="training-card__bar"><div class="training-card__fill" style="width:98%;background:#2ecc71"></div></div>
+            <div class="training-card__meta"><span>98% complete</span><span>62 / 63</span></div>
+          </div>
+          <div class="training-card" style="animation-delay:0.15s">
+            <div class="training-card__name">Haul Truck Operation — AHS</div>
+            <div class="training-card__bar"><div class="training-card__fill" style="width:95%;background:#f5a623"></div></div>
+            <div class="training-card__meta"><span>95% complete</span><span>38 / 40</span></div>
+          </div>
+          <div class="training-card" style="animation-delay:0.2s">
+            <div class="training-card__name">Confined Space Entry</div>
+            <div class="training-card__bar"><div class="training-card__fill" style="width:100%;background:#2ecc71"></div></div>
+            <div class="training-card__meta"><span>100% complete</span><span>18 / 18</span></div>
+          </div>
+          <div class="training-card" style="animation-delay:0.25s">
+            <div class="training-card__name">Working at Heights</div>
+            <div class="training-card__bar"><div class="training-card__fill" style="width:93%;background:#f5a623"></div></div>
+            <div class="training-card__meta"><span>93% complete</span><span>55 / 59</span></div>
+          </div>
+          <div class="training-card" style="animation-delay:0.3s">
+            <div class="training-card__name">Chemical Handling & MSDS</div>
+            <div class="training-card__bar"><div class="training-card__fill" style="width:97%;background:#2ecc71"></div></div>
+            <div class="training-card__meta"><span>97% complete</span><span>72 / 74</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/hubs/_hub-guard.js"></script>
+  <script src="/js/main.js"></script>
+  <script>
+    SESMineGuard('safety-hub');
+    const s = SESMine.getSession();
+    if (s) {
+      const c={free:'#6b7280',pro:'#6366f1',enterprise:'#f5a623',admin:'#ef4444'};
+      const p=s.role==='admin'?'admin':s.plan;
+      document.getElementById('sidebarUser').innerHTML=`
+        <img src="${s.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid #ef4444;flex-shrink:0"/>
+        <div>
+          <div style="font-size:0.8rem;font-weight:700">${s.firstName} ${s.lastName}</div>
+          <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${c[p]}22;color:${c[p]};border:1px solid ${c[p]}44">${p.toUpperCase()}</span>
+        </div>`;
+    }
+    // Animate LTI counter up
+    let count=0;
+    const target=142;
+    const el=document.getElementById('ltiDays');
+    const timer=setInterval(()=>{
+      count+=3;
+      if(count>=target){count=target;clearInterval(timer);}
+      el.textContent=count;
+    },16);
+  </script>
+</body>
+</html>
